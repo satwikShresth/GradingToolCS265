@@ -5,7 +5,7 @@ from dateutil import parser
 import zipfile
 import subprocess
 import difflib
-import json,ast
+import json
 
 
 
@@ -49,6 +49,7 @@ class c_GradeMain:
     def __init__(self,totalPoints=100):
         self.totalPoints=totalPoints
         self.listOfStudents= self.m_StudentsDict()
+        self.listOfStudentsGraded= set()
         self.feedback={}
 
     def m_StudentsDict(self):
@@ -74,7 +75,7 @@ class c_student:
         self.m_CheckSubmissionTime(duedate)
 
     def m_InitFeedback(self):
-        return self.m_FeedbackHeader(os.path.join(os.getcwd(),self.name,self.submitLog)) + "Grade: \n\nFeedback:-\n" 
+        return self.m_FeedbackHeader(os.path.join(os.getcwd(),self.name,self.submitLog)) + "Grade: ??\n\nFeedback:-\n" 
  
 
     def m_FeedbackHeader(self,filePath) -> str:
@@ -167,9 +168,20 @@ class c_GradeLab5():
         self.filesReq = filesReq.split()
         if (zipFile != None):
             self.zipFile=zipFile
-        self.gradeQuickSortExe = self.compileTestingExe("testQuickSort","testQuickSort.c")
-        self.gradeSplitExe = self.compileTestingExe("testSplit","testSplit.c")
-        self.testStringsQ1 = ["Hello, this is a longer test string! Can you reverse it correctly?","Reverse this sentence and see if it makes sense: The quick brown fox jumps over the lazy dog.","Punctuation can make a difference: Try reversing this sentence and see if it's still grammatically correct: 'A man, a plan, a canal, Panama!'","This is another longer test string! It contains a mix of uppercase and lowercase letters, as well as punctuation marks.","Can you reverse this string correctly, even with multiple spaces between words? Reverse it now please.","This string contains a mix of letters, numbers, and symbols: 1, 2, 3, go! #reversed.","This string contains repeated words and letters: reverse reverse reverse me me me now now now.","Can you reverse this string that ends with a question mark? This is the end, my friend.","This string contains an exclamation mark at the end: Reverse this string now! Wow!","This string contains a mix of everything: letters, numbers, symbols, punctuation, and even repeated words! Reverse it and see the magic!"]
+        self.gradeQuickSortExe = self.m_compileTestingExe("testQuickSort","testQuickSort.c")
+        self.gradeSplitExe = self.m_compileTestingExe("testSplit","testSplit.c")
+        self.testStringsQ1 = [
+            "Go home, relax. Reverse this string.",
+            "Can you handle this? Reverse it.",
+            "A quick brown fox jumps over the lazy dog. Reverse.",
+            "Easy come, easy go. Reverse it now.",
+            "Action speaks louder than words. Reverse this.",
+            "Too good to be true. Reverse this statement.",
+            "All good things come to those who wait. Reverse it.",
+            "Practice makes perfect. Reverse this phrase.",
+            "Nothing is impossible. Reverse this belief.",
+            "Where there's a will, there's a way. Reverse it."
+            ]
         self.testStringsQ3 = {
             "1":[[734, 896, 402, 977, 781, 671, 212, 163, 679, 502],[163, 212, 402, 502, 671, 679, 734, 781, 896, 977]],
             "2":[[194, 732, 243, 952, 719, 812, 603, 541, 890, 910],[194, 243, 541, 603, 719, 732, 812, 890, 910, 952]],
@@ -179,7 +191,26 @@ class c_GradeLab5():
         }
 
 
-    def compileTestingExe(self,output,input):
+    def m_gradeLab5(self,name):
+        student = self.GradeMain.listOfStudents[name]
+        currentWorkingDir = os.getcwd()
+        path =os.path.join(os.getcwd(),name)
+        # print(f'Changing working directory to {path}')
+        os.chdir(path)
+        self.m_CheckQuestion1(student)
+        self.m_CheckQuestion2(student)
+        self.m_CheckQuestion3(student)
+        self.m_createFeedbackFile(student)
+        # print(f'Changing working directory back to {currentWorkingDir}')
+        os.chdir(currentWorkingDir)
+
+
+    def m_createFeedbackFile(self,student):
+        with open(student.feedbackFile, "w+") as f:
+            f.write(student.feedback)
+
+
+    def m_compileTestingExe(self,output,input):
         if(self.m_compileCfile(["gcc", "-ldl", "-o",f"{PATH}/{output}",f"{PATH}/{input}"])):
             return output
 
@@ -215,20 +246,23 @@ class c_GradeLab5():
             return True
 
     def m_testExecutableQuestion1(self,student,outputFile):
+        pointsDeduct=0
         for testString in self.testStringsQ1:
-            process = subprocess.Popen([f"./{outputFile}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE,shell=True,universal_newlines=True)
-            output, _ = process.communicate(input=testString)
+            process = subprocess.Popen([f"./{outputFile}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+            output, error = process.communicate(input=testString.encode('utf-8'))
+            output = output.decode(errors='ignore')
             output =":".join(output.split(":")[2::])
             matcher = difflib.SequenceMatcher(None, output, testString[::-1])
             similarity = matcher.ratio() * 100
             if (similarity>96):
-                student.totalPoints-=.5
+                student.totalPoints+=.5
             else:
+                pointsDeduct=-.5
                 student.feedback+= f"{-.5:<6}Failed Test String      -> {testString}\n"
                 student.feedback+= f"{'':6}your ouput              -> {output}\n"
                 student.feedback+= f"{'':6}desired output          -> {testString[::-1]}\n"
                 student.feedback+= f"{'':6}Similarity Percent      -> {similarity}\n"
-                
+        return pointsDeduct
     def m_testExecutableQuestion3(self,student,testExe,outputFile):
         process = subprocess.Popen([f"{PATH}/{testExe} ./{outputFile}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE,shell=True,universal_newlines=True)
         output, _ = process.communicate()
@@ -252,29 +286,22 @@ class c_GradeLab5():
 
     def m_CheckQuestion1(self,student):
         student.feedback+= f"\nPart-1 Reverse the string\n"
-        currentWorkingDir = os.getcwd()
-        path =os.path.join(os.getcwd(), student.name)
-        # print(f'Changing working directory to {path}')
-        os.chdir(path)
         filename = self._CheckFile_(student,self.filesReq[0])
         if( filename != False):
             
             output = "Question1"
             if(self.m_compileCfile(["gcc", filename, "-o", output])):
-                self.m_testExecutableQuestion1(student,output)
-            
+                pointDeducted = self.m_testExecutableQuestion1(student,output)
+                if( pointDeducted ==0):
+                    student.feedback+= f"{'':6} All test strings passed\n"
+                else:
+                    student.totalPoints-=pointDeducted
             else:
                 student.feedback+= f"{-5:<6} Compilation Error\n"
                 student.totalPoints-=5
-        # print(f'Changing working directory back to {currentWorkingDir}')
-        os.chdir(currentWorkingDir)
 
     def m_CheckQuestion2(self,student):
         student.feedback+= f"\nPart-2 Reverse the string[*pointers]\n"
-        currentWorkingDir = os.getcwd()
-        path =os.path.join(os.getcwd(), student.name)
-        # print(f'Changing working directory to {path}')
-        os.chdir(path)
         filename = self._CheckFile_(student,self.filesReq[1])
         if( filename != False):
 
@@ -282,29 +309,32 @@ class c_GradeLab5():
             if(self.m_compileCfile(["gcc", filename, "-o", output])):
                 subprocess.run(["less", f"{filename}"])
                 while(1):
-                    grade = int(input("Grade[?/5]: "))
-                    if grade > 0 and grade <6:
-                        feedback = input("Feedback: ")
-                        student.feedback+= f"{-(5-grade):<6} {feedback}\n"
-                        self.m_testExecutableQuestion1(student,output)
-                        break
-                    elif grade==0:
-                        student.feedback+= f"{-10:<6} Did not follow the instructions!\n"
-                        break
+                    grade = input("Grade[?/5]: ")
+                    if grade.isdigit():
+                        grade = int(grade)
+                        if grade > 0 and grade <6:
+                            feedback = input("Feedback: ")
+                            student.totalPoints+=(grade-5)
+                            if (grade-5) == 0:
+                                student.feedback+= f"{' ':6} {feedback}\n"
+                            else:
+                                student.feedback+= f"{(grade-5):<6} {feedback}\n"
+                            pointDeducted = self.m_testExecutableQuestion1(student,output)
+                            if( pointDeducted ==0):
+                                student.feedback+= f"{'':6} All test strings passed\n"
+                            else:
+                                student.totalPoints-=pointDeducted
+                            break
+                        elif grade==0:
+                            student.feedback+= f"{-10:<6} Did not follow the instructions!\n"
+                            break
 
             else:
                 student.feedback+= f"{-5:<6} Compilation Error\n"
                 student.totalPoints-=5
-        # print(f'Changing working directory back to {currentWorkingDir}')
-        os.chdir(currentWorkingDir)
 
     def m_CheckQuestion3(self,student):
-        student = self.GradeMain.listOfStudents[student]
         student.feedback+= f"\nPart-3 Modifying split function accept 1 array, 2 int* and return int*\n"
-        currentWorkingDir = os.getcwd()
-        path =os.path.join(os.getcwd(), student.name)
-        # print(f'Changing working directory to {path}')
-        os.chdir(path)
         filename = self._CheckFile_(student,self.filesReq[2])
         if( filename != False):
             output = "Question3.so"
@@ -316,18 +346,147 @@ class c_GradeLab5():
             else:
                 student.feedback+= f"{-5:<6} Compilation Error\n"
                 student.totalPoints-=5
-        # print(f'Changing working directory back to {currentWorkingDir}')
-        os.chdir(currentWorkingDir)
+        
 
 
 
-# class c_Shell():
-#     def __init__(self):
-#         self.GradeMain = c_GradeMain()
+class c_Shell():
+    def __init__(self):
+        if(self.initalizer()== False):
+            print("Couldn't initalize the script")
+            exit(0)
+        c_DirOrganizer().organize()
+        self.GradeMain = c_GradeMain()
+        self.loadProgress()
+        self.assignmentsToGrade= len(self.GradeMain.listOfStudents)
+        self.grade=c_GradeLab5(self.GradeMain)
+        self.menu()
 
-#     def shellStruct():
-#         while():
-#             ans = input("")
+    def initalizer(self):
+        print(f"Current Working Directory: {os.getcwd()}")
+        print("Assignments available:-")
+        for file in os.listdir("."):
+            if os.path.isdir(file):
+                print(file, end=" ")
+        print()
+        while(1):
+                ipt=input("Which Assignment would you like to grade [q to exit]: ")
+                if ipt == "q":
+                    return False
+                elif os.path.isdir(ipt):
+                    os.chdir(ipt)
+                    self.assignmentGraded = ipt
+                    return True
+                else:
+                    print("Try Again!!")
+    
+    def loadProgress(self):
+        try:
+            with open("students.graded", "r") as f:
+                data = json.load(f)
+            self.GradeMain.listOfStudentsGraded = set(data)
+        except:
+            self.GradeMain.listOfStudentsGraded = set()
+
+    def saveProgress(self):
+        with open("students.graded", "w+") as f:
+            json.dump(list(self.GradeMain.listOfStudentsGraded), f)
+
+    def _gradeHelper_(self,name,assignmentsGraded):
+            print(f"Graded : {assignmentsGraded}")
+            print(f"Number of assignments left {self.assignmentsToGrade - assignmentsGraded}")
+            while True:
+                userInput = input(f"Grade {name} [(y)es/(n)o/(q)uit]: ")
+                match userInput.lower():
+                    case "y":
+                        self.grade.m_gradeLab5(name)
+                        break
+                    case "n":
+                        print("No")
+                        break
+                    case "q":
+                        print("quit")
+                        break
+                    case _:
+                        print("try again")
+                        continue
+            self.GradeMain.listOfStudentsGraded.add(name)
+            self.saveProgress()
+
+
+    def m_shellFreshGrade(self):
+        self.GradeMain.listOfStudentsGraded.clear()
+        assignmentsGraded=len(self.GradeMain.listOfStudentsGraded)
+        for name in self.GradeMain.listOfStudents.keys():
+            self._gradeHelper_(name,assignmentsGraded)
+            assignmentsGraded+=1
+            
+
+    def m_shellGrade(self):
+        assignmentsGraded=len(self.GradeMain.listOfStudentsGraded)
+        for name in self.GradeMain.listOfStudents.keys():
+            if name not in self.GradeMain.listOfStudentsGraded:
+                self._gradeHelper_(name,assignmentsGraded)
+                assignmentsGraded+=1
+
+
+    def menu(self):
+        assignmentsGraded=len(self.GradeMain.listOfStudentsGraded)
+        print(f"Number of Students to grade : {self.assignmentsToGrade}")
+        print(f"Number of assignments graded: {assignmentsGraded}")
+        print(f"------------------------------------------------------------------------------")
+        print(f"Options:-")
+        print(f"Grade   - Start grading students")
+        print(f"Mail    - All the students there grade")
+        print(f"Tab     - Tabulate all the grade")
+        print(f"Exit    - Do nothing")
+        while True:
+                userInput = input(f"Enter Action>")
+                match userInput.lower():
+                    case "grade":
+                        print(f"------------------------------------------------------------------------------")
+                        self.m_shellStruct()
+                        break
+                    case "mail":
+                        print(f"------------------------------------------------------------------------------")
+                        break
+                    case "tab":
+                        print("Feature under way")
+                        break
+                    case "exit":
+                        break
+                    case _:
+                        print("try again")
+                        continue
+
+
+
+    def m_shellStruct(self):
+        assignmentsGraded=len(self.GradeMain.listOfStudentsGraded)
+        if (assignmentsGraded !=0):
+            while True:
+                    print(f"Number of assignments already graded: {assignmentsGraded} out of {self.assignmentsToGrade}")
+                    userInput = input("Do you want to start Grading form where you left? [(y)es/(n)o/(q)uit]: ")
+                    match userInput:
+                        case "y":
+                            self.m_shellGrade()
+                            break
+                        case "n":
+                            self.m_shellFreshGrade()
+                            break
+                        case "q":
+                            print("quit")
+                            break
+                        case _:
+                            print("try again")
+                            continue
+        else:
+            self.m_shellFreshGrade()
+
+            
+
+
+            
 
 
 
@@ -348,11 +507,15 @@ def main():
     os.chdir(path)
     ################################################################
 
-    c_DirOrganizer().organize()
-    grade = c_GradeMain()
-    grade_lab5 = c_GradeLab5(grade,zipFile=None)
-    grade_lab5.m_CheckQuestion3("ss5278")
-    print(grade.m_getStudent("ss5278").feedback)
+
+
+    c_Shell()
+    # grade = c_GradeMain()
+    # grade_lab5 = c_GradeLab5(grade,zipFile=None)
+    # grade_lab5.m_CheckQuestion1("ss5278")
+    # grade_lab5.m_CheckQuestion2("ss5278")
+    # grade_lab5.m_CheckQuestion3("ss5278")
+    # print(grade.m_getStudent("ss5278").feedback)
 
     ################################################################
     #Post-Req
