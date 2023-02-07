@@ -1,1 +1,1 @@
-import myLibs
+import GradeScript.libManager as libManager
