@@ -1,5 +1,4 @@
-from myLibs import os, parser, re, zipfile,PATH
-import c_Student
+import os
 
 class c_DirOrganizer:
     def __init__(self):

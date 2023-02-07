@@ -1,10 +1,13 @@
-from myLibs import os, parser, re, zipfile,PATH,c_Student
+import os
+from c_Student import c_Student
 
 
 class c_GradeMain:
-    def __init__(self,totalPoints=100):
-        self.totalPoints=totalPoints
+    def __init__(self,Grade=100,grader="Satwik Shresth"):
+        self.grade=Grade
+        self.grader=grader
         self.listOfStudents= self.m_StudentsDict()
+        self.listOfStudentsGraded= set()
         self.feedback={}
 
     def m_StudentsDict(self):

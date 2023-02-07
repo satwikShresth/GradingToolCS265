@@ -1,6 +1,6 @@
 import os
 import sys
-import re,datetime
+import re
 from dateutil import parser
 import zipfile
 import subprocess
@@ -57,7 +57,7 @@ class c_GradeMain:
         dict={}
         for name in os.listdir("."):
             if os.path.isdir(os.path.join(".", name)):
-                dict[name]=c_student(name)
+                dict[name]=c_Student(name)
         return dict
 
     def m_getStudent(self,name):
@@ -66,7 +66,7 @@ class c_GradeMain:
     
 
 
-class c_student():
+class c_Student():
     def __init__(self,name,grader="Satwik Shresth",startPoints:float=100,submitLog="submit.log",gradeFile="grade.file",duedate="Thursday, February 2, 2023 11:59:59 PM EST"):
         self.name = name
         self.grader=grader
@@ -194,7 +194,7 @@ class c_GradeLab5():
         self.footer = "\nBest,\nSatwik Shresth\nBSc Computer Science\nCollege of Computing and Informatics\nDrexel University\nPhiladelphia, PA 19104\nsatwik.shresth@drexel.edu\n"
 
 
-    def m_finalizeGrade(self,student:c_student):
+    def m_finalizeGrade(self,student:c_Student):
         student.feedback = student.feedback.replace('?!?',str(student.grade))
     def m_gradeLab5(self,name):
         student = self.gradeMain.listOfStudents[name]
@@ -214,7 +214,7 @@ class c_GradeLab5():
         os.chdir(currentWorkingDir)
 
 
-    def m_createFeedbackFile(self,student:c_student):
+    def m_createFeedbackFile(self,student:c_Student):
         with open(student.feedbackFile, "w+") as f:
             f.write(student.feedback)
 
@@ -253,7 +253,7 @@ class c_GradeLab5():
         else:
             return True
 
-    def m_testExecutableQuestion1(self,student:c_student,outputFile):
+    def m_testExecutableQuestion1(self,student:c_Student,outputFile):
         pointsDeduct=0
         for testString in self.testStringsQ1:
             process = subprocess.Popen([f"./{outputFile}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -271,7 +271,7 @@ class c_GradeLab5():
                 student.feedback+= f"-----------------------------------------------------------------------\n"
         return pointsDeduct
 
-    def m_testExecutableQuestion3(self,student:c_student,testExe,outputFile):
+    def m_testExecutableQuestion3(self,student:c_Student,testExe,outputFile):
         process = subprocess.Popen([f"{PATH}/{testExe} ./{outputFile}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE,shell=True,universal_newlines=True)
         output, _ = process.communicate()
         output =list(filter(None,output.split('\n')))
@@ -295,7 +295,7 @@ class c_GradeLab5():
             student.feedback+= f"{'':6}All Test Strings Passed\n"
             student.feedback+= f"-----------------------------------------------------------------------\n"
 
-    def m_feedbackLoop(self,student:c_student,filename,outOf):
+    def m_feedbackLoop(self,student:c_Student,filename,outOf):
         subprocess.run(["less", f"{filename}"])
         while(1):
             grade = input(f"Grade[?/{outOf}]: ")
@@ -311,12 +311,12 @@ class c_GradeLab5():
                     break
 
 
-    def m_compilationError(self,student:c_student,filename,error,outOf):
+    def m_compilationError(self,student:c_Student,filename,error,outOf):
         student.feedback+= f" {-5:<6} Compilation Error: {error}"
         student.grade-=5
         self.m_feedbackLoop(student,filename,outOf)
 
-    def m_CheckQuestion1(self,student:c_student):
+    def m_CheckQuestion1(self,student:c_Student):
         student.feedback+= f"\nPart-1 Reverse the string\n"
         student.feedback+= f"-----------------------------------------------------------------------\n"
         filename = self._CheckFile_(student,self.filesReq[0])
@@ -333,7 +333,7 @@ class c_GradeLab5():
                 self.m_compilationError(student,filename,notError,5)
                 
 
-    def m_CheckQuestion2(self,student:c_student):
+    def m_CheckQuestion2(self,student:c_Student):
         student.feedback+= f"\nPart-2 Reverse the string[*pointers]\n"
         student.feedback+= f"-----------------------------------------------------------------------\n"
         filename = self._CheckFile_(student,self.filesReq[1])
@@ -367,7 +367,7 @@ class c_GradeLab5():
             else:
                 self.m_compilationError(student,filename,notError,5)
 
-    def m_CheckQuestion3(self,student:c_student):
+    def m_CheckQuestion3(self,student:c_Student):
         student.feedback+= f"\nPart-3 Modifying split function accept 1 array, 2 int* and return int*\n"
         student.feedback+= f"-----------------------------------------------------------------------\n"
         filename = self._CheckFile_(student,self.filesReq[2])
@@ -383,14 +383,14 @@ class c_GradeLab5():
             else:
                 self.m_compilationError(student,filename,notError,10)
 
-    def m_showGradeFile(self,student:c_student):
+    def m_showGradeFile(self,student:c_Student):
         subprocess.run(["less", f"{student.feedbackFile}"])
     
-    def m_editGradeFile(self,student:c_student):
+    def m_editGradeFile(self,student:c_Student):
         subprocess.run(["code","-r", f"{student.feedbackFile}"])
 
         
-    def m_gradedReport(self,student:c_student):
+    def m_gradedReport(self,student:c_Student):
         print(f"------------------------------------------------------------------------------")
         print(f"Student : {student.name}")
         print(f"Grade   : {student.grade}")
