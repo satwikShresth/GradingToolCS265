@@ -191,7 +191,7 @@ class c_GradeLab5():
             "5":[[758, 191, 903, 443, 526, 986, 849, 598, 126, 660],[126, 191, 443, 526, 598, 660, 758, 849, 903, 986]]
         }
         self.funFact = f"\n\nFun Fact: Your assignment is graded and mailed to you using a script.\n{' ':10}It created by all the cool proggramming language, techniques and tools you are learning in this class\n{' ':10}i.e. Bash,C,awk,grep,python,cat"
-        self.footer = "\nBest,\n    Satwik Shresth\n    BSc Computer Science\n  College of Computing and Informatics\n  Drexel University\n Philadelphia, PA 19104\n    satwik.shresth@drexel.edu\n"
+        self.footer = "\nBest,\nSatwik Shresth\nBSc Computer Science\nCollege of Computing and Informatics\nDrexel University\nPhiladelphia, PA 19104\nsatwik.shresth@drexel.edu\n"
 
 
     def m_finalizeGrade(self,student:c_student):
