@@ -141,5 +141,5 @@ bool is_same(int arr1[], int arr2[], int n) {
             return false;
         }
     }
-    return false;
+    return true;
 }
