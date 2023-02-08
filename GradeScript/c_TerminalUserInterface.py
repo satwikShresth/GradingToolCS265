@@ -1,10 +1,12 @@
-import os,curses
+import os
+import curses
+
 
 class c_termianlUserInterface():
     def __init__(self) -> None:
         pass
 
-    def _preReq_(self,screen):
+    def _preReq_(self, screen):
         # Disable line buffering
         curses.cbreak()
 
@@ -22,11 +24,10 @@ class c_termianlUserInterface():
 
         return win
 
-    def _refreshContent_(self,dir_content):
+    def _refreshContent_(self, dir_content):
         return [dir for dir in dir_content if os.path.isdir(dir)]
 
-    
-    def _selectDirectory_(self,screen):
+    def _selectDirectory_(self, screen):
 
         win = self._preReq_(screen)
         # Get the current working directory
@@ -73,21 +74,19 @@ class c_termianlUserInterface():
                     path = newPath
                     os.chdir(path)
                     dir_content = self._refreshContent_(os.listdir(path))
-                    selected_item =0
+                    selected_item = 0
             elif key == ord("\n"):
                 break
             elif key == ord("q"):
                 curses.endwin()
                 return "q"
-                
-        
+
         # Deinitialize the screen
         curses.endwin()
 
         return os.path.join(path, dir_content[selected_item])
 
-
-    def m_terminalUserInterface(self,screen,options,instructions):
+    def m_terminalUserInterface(self, screen, options, instructions):
         win = self._preReq_(screen)
         dir_content = options
         # Initialize the selected item
@@ -96,10 +95,10 @@ class c_termianlUserInterface():
         while True:
             win.clear()
 
-            idx = 0 
+            idx = 0
             for instruction in instructions:
                 win.addstr(idx, 0, instruction)
-                idx+=1
+                idx += 1
 
             for idx2, item in enumerate(dir_content):
                 if idx2 == selected_item:
@@ -122,7 +121,7 @@ class c_termianlUserInterface():
                     selected_item += 1
             elif key == ord("\n"):
                 break
-        
+
         # Deinitialize the screen
         curses.endwin()
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-import c_Shell
+from c_Shell import c_Shell
 
 def main():
-    shell = c_Shell.c_Shell()
+    shell = c_Shell()
+
 
 if __name__ == "__main__":
     main()
