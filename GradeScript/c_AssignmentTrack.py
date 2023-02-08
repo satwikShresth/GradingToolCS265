@@ -42,20 +42,25 @@ class c_AssignmentTrack():
         if os.path.isfile(filename):
             return filename
         else:
-            print("Files available:-")
-            for file in os.listdir("."):
-                if os.path.isfile(file):
-                    print(file, end=" ")
+            instructions =[ f"Student : {student.name}",f"Select a file for {filename}:"]
+            options=[ file for file in os.listdir(".")if os.path.isfile(file)]
             while(1):
-                ipt=input("\nGive a file name[q to exit/doesn't exist]: ")
-                if ipt == "q":
+                screen = curses.initscr()
+                selectedData = self.uI.m_terminalUserInterface(screen,options,instructions)
+                curses.endwin()
+                if (selectedData == "q"):
                     student.initialFeedback += f" {-10:<6} {filename} does not exist\n"
                     return False
-                elif os.path.isfile(ipt):
-                    student.initialFeedback += f"Bad file name: {ipt} found instead of {filename}\n"
-                    return ipt
                 else:
-                    print("Try Again!!")
+                    self.m_showFile(selectedData)
+                    instructions =[ f"Is {selectedData} Correct?"]
+                    options=["Yes","No"]
+                    screen = curses.initscr()
+                    ans = self.uI.m_terminalUserInterface(screen,options,instructions)
+                    curses.endwin()
+                    if (ans != "n"):
+                        student.initialFeedback += f"Bad file name: {selectedData} found instead of {filename}\n"
+                        return selectedData
 
     def m_compileCfile(self,proc):
         result = subprocess.run(proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -118,7 +123,7 @@ class c_GradeLab5(c_AssignmentTrack):
         instructions =[ f"Student : {student.name}",
                         f"Grade   : {student.grade}",
                         "Select an option:"]
-        options = ["Edit File","Recompile","Regrade"]
+        options = ["Edit File","Recompile","Regrade","Change"]
         while True:
             screen = curses.initscr()
             selectedData = self.uI.m_terminalUserInterface(screen,options,instructions)
@@ -135,6 +140,8 @@ class c_GradeLab5(c_AssignmentTrack):
                     input()
             elif (selectedData == options[2]):
                 break
+            elif (selectedData == options[3]):
+                self._CheckFile_(student,filename)
 
 
     def m_gradedReport(self,student:c_Student):

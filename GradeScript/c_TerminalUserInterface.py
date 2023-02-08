@@ -76,6 +76,10 @@ class c_termianlUserInterface():
                     selected_item =0
             elif key == ord("\n"):
                 break
+            elif key == ord("q"):
+                curses.endwin()
+                return "q"
+                
         
         # Deinitialize the screen
         curses.endwin()
