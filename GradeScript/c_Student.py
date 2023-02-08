@@ -9,6 +9,8 @@ class c_Student():
         self.grade = startPoints
         self.submitLog=submitLog
         self.feedbackFile=gradeFile
+        self.initialFeedback= self.m_InitFeedback()
+        self.filenames=[]
         self.feedback = self.m_InitFeedback()
         self.m_CheckSubmissionTime(duedate)
 
