@@ -4,11 +4,10 @@ from c_Student import c_Student
 
 class c_GradeMain:
     def __init__(self, Grade=100, grader="Satwik Shresth"):
-        self.grade = Grade
-        self.grader = grader
-        self.listOfStudents = self.m_StudentsDict()
-        self.listOfStudentsGraded = set()
-        self.feedback = {}
+        self.f_grade:float = Grade
+        self.s_grader:str = grader
+        self.d_listOfStudents:dict = self.m_StudentsDict()
+        self.ss_listOfStudentsGraded:set = set()
 
     def m_StudentsDict(self):
         dict = {}
@@ -18,4 +17,4 @@ class c_GradeMain:
         return dict
 
     def m_getStudent(self, name):
-        return self.listOfStudents[name]
+        return self.d_listOfStudents[name]

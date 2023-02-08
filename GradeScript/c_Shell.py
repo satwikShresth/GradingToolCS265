@@ -11,27 +11,27 @@ import curses
 
 class c_Shell():
     def __init__(self):
-        self.uI = c_termianlUserInterface()
-        if (self.initalizer() == False):
+        self.o_uI = c_termianlUserInterface()
+        if (self.m_initalizer() == False):
             print("Couldn't initalize the script")
             exit(0)
-        c_DirOrganizer().organize()
-        self.gradeMain = c_GradeMain()
-        self.mail = c_Mail(self.gradeMain)
-        self.loadProgress()
-        self.assignmentsToGrade = len(self.gradeMain.listOfStudents)
-        assignment = c_AssignmentTrack(self.gradeMain, self.assignmentToGrade)
-        self.grade = assignment.initalizer()
+        c_DirOrganizer().m_organize()
+        self.o_gradeMain:c_GradeMain = c_GradeMain()
+        self.mail:c_Mail = c_Mail(self.o_gradeMain)
+        self.m_loadProgress()
+        self.i_assignmentsToGrade:int = len(self.o_gradeMain.d_listOfStudents)
+        assignment:c_AssignmentTrack = c_AssignmentTrack(self.o_gradeMain, self.assignmentToGrade)
+        self.o_grade = assignment.m_initalizer()
         self.m_menu()
 
-    def initalizer(self):
+    def m_initalizer(self):
         # Pre-Req
         self.currentWorkingDir = os.getcwd()
         os.chdir("../TA-CS265-1")
         curses.initscr()
         curses.endwin()
         screen = curses.initscr()
-        path = self.uI._selectDirectory_(screen)
+        path = self.o_uI._selectDirectory_(screen)
         curses.endwin()
         # print(f'Changing working directory to {path}')
         if path == "q":
@@ -43,30 +43,30 @@ class c_Shell():
         self.assignmentToGrade = path.split("/")[-1]
         return True
 
-    def loadProgress(self):
+    def m_loadProgress(self):
         try:
             with open("students.graded", "r") as f:
                 data = json.load(f)
-            self.gradeMain.listOfStudentsGraded = set(data)
+            self.o_gradeMain.ss_listOfStudentsGraded = set(data)
         except:
-            self.gradeMain.listOfStudentsGraded = set()
+            self.o_gradeMain.ss_listOfStudentsGraded = set()
 
-    def saveProgress(self):
+    def m_saveProgress(self):
         with open("students.graded", "w+") as f:
-            json.dump(list(self.gradeMain.listOfStudentsGraded), f)
+            json.dump(list(self.o_gradeMain.ss_listOfStudentsGraded), f)
 
     def m_gradeHelper(self, name):
-        instructions = [f"Assignments graded :{len(self.gradeMain.listOfStudentsGraded)}", f"Assignments left: {self.assignmentsToGrade - len(self.gradeMain.listOfStudentsGraded)}",
+        instructions = [f"Assignments graded :{len(self.o_gradeMain.ss_listOfStudentsGraded)}", f"Assignments left: {self.i_assignmentsToGrade - len(self.o_gradeMain.ss_listOfStudentsGraded)}",
                         "Select an option:"]
-        options = [f"Grade {name}", "Skip", "Quit"]
+        options = [f"Grade {name}", "Skip", "Qo_uit"]
         screen = curses.initscr()
-        selectedData = self.uI.m_terminalUserInterface(
+        selectedData = self.o_uI.m_terminalUserInterface(
             screen, options, instructions)
         curses.endwin()
         if (selectedData == options[0]):
-            self.grade.m_grade(name)
-            self.gradeMain.listOfStudentsGraded.add(name)
-            self.saveProgress()
+            self.o_grade.m_grade(name)
+            self.o_gradeMain.ss_listOfStudentsGraded.add(name)
+            self.m_saveProgress()
             return False
         elif (selectedData == options[1]):
             print(f"{name} Skiped")
@@ -76,32 +76,32 @@ class c_Shell():
             return True
 
     def m_shellFreshGrade(self):
-        self.gradeMain.listOfStudentsGraded = set()
-        self.saveProgress()
-        for name in self.gradeMain.listOfStudents.keys():
+        self.o_gradeMain.ss_listOfStudentsGraded = set()
+        self.m_saveProgress()
+        for name in self.o_gradeMain.d_listOfStudents.keys():
             if (self.m_gradeHelper(name)):
                 break
 
     def m_shellGrade(self):
-        for name in self.gradeMain.listOfStudents.keys():
-            if name not in self.gradeMain.listOfStudentsGraded:
+        for name in self.o_gradeMain.d_listOfStudents.keys():
+            if name not in self.o_gradeMain.ss_listOfStudentsGraded:
                 if (self.m_gradeHelper(name)):
                     break
 
     def m_menu(self):
-        instructions = [f"Total assignments : {self.assignmentsToGrade}",
-                        f"Number of assignments graded: {len(self.gradeMain.listOfStudentsGraded)}",
+        instructions = [f"Total assignments : {self.i_assignmentsToGrade}",
+                        f"Number of assignments graded: {len(self.o_gradeMain.ss_listOfStudentsGraded)}",
                         "Select an option:"]
         options = ["Start Grading", "Mail Grades", "Tabulate Grades", "EXIT"]
         while True:
             screen = curses.initscr()
-            selectedData = self.uI.m_terminalUserInterface(
+            selectedData = self.o_uI.m_terminalUserInterface(
                 screen, options, instructions)
             curses.endwin()
             if (selectedData == options[0]):
                 self.m_shellStruct()
             elif (selectedData == options[1]):
-                self.mail.m_sendMail(list(self.gradeMain.listOfStudentsGraded))
+                self.mail.m_sendMail(list(self.o_gradeMain.ss_listOfStudentsGraded))
             elif (selectedData == options[2]):
                 print("Feature under way")
             elif (selectedData == options[3]):
@@ -113,15 +113,15 @@ class c_Shell():
             time.sleep(2)
 
     def m_shellStruct(self):
-        assignmentsGraded = len(self.gradeMain.listOfStudentsGraded)
-        instructions = [f"Total assignments : {self.assignmentsToGrade}",
-                        f"Number of assignments graded: {len(self.gradeMain.listOfStudentsGraded)}",
+        assignmentsGraded = len(self.o_gradeMain.ss_listOfStudentsGraded)
+        instructions = [f"Total assignments : {self.i_assignmentsToGrade}",
+                        f"Number of assignments graded: {len(self.o_gradeMain.ss_listOfStudentsGraded)}",
                         "Select an option:"]
         options = ["Grade Leftover", "Start Fresh", "EXIT"]
         if (assignmentsGraded != 0):
             while True:
                 screen = curses.initscr()
-                selectedData = self.uI.m_terminalUserInterface(
+                selectedData = self.o_uI.m_terminalUserInterface(
                     screen, options, instructions)
                 curses.endwin()
                 if (selectedData == options[0]):

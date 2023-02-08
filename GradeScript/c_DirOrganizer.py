@@ -33,5 +33,5 @@ class c_DirOrganizer:
             if os.path.isfile(filename):
                 self.m_SplitAndStore(filename, "_")
 
-    def organize(self):
+    def m_organize(self):
         self.m_ReadDirectory()

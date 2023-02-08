@@ -10,23 +10,24 @@ PATH = "/home/ss5278/GradeScript"
 
 class c_AssignmentTrack():
     def __init__(self, GradeMain: c_GradeMain, assignment):
-        self.uI = c_termianlUserInterface()
-        self.gradeMain = GradeMain
-        self.assignmentToGrade = assignment
-        self.zipFile = ""
-        self.funFact = f"\n\nFun Fact: Your assignment is graded and mailed to you using a script.\n{' ':10}It created by all the cool proggramming language, techniques and tools you are learning in this class\n{' ':10}i.e. Bash,C,awk,grep,python,cat"
-        self.footer = "\nBest,\nSatwik Shresth\nBSc Computer Science\nCollege of Computing and Informatics\nDrexel University\nPhiladelphia, PA 19104\nsatwik.shresth@drexel.edu\n"
+        self.uI:c_termianlUserInterface = c_termianlUserInterface()
+        self.gradeMain:c_GradeMain = GradeMain
+        self.assignmentToGrade:str = assignment
+        self.zipFile:str = ""
+        self.funFact:str = f"\n\nFun Fact: Your assignment is graded and mailed to you using a script.\n{' ':10}It created by all the cool proggramming language, techniques and tools you are learning in this class\n{' ':10}i.e. Bash,C,awk,grep,python,cat"
+        self.foote:str = "\nBest,\nSatwik Shresth\nBSc Computer Science\nCollege of Computing and Informatics\nDrexel University\nPhiladelphia, PA 19104\nsatwik.shresth@drexel.edu\n"
 
-    def initalizer(self):
+    def m_initalizer(self):
         if self.assignmentToGrade == "Lab5":
             from c_GradeLab5 import c_GradeLab5
             return c_GradeLab5(self.gradeMain)
         else:
-            return c_GradeShell()
+            from c_GradeShell import c_GradeShell
+            return c_GradeShell(self.gradeMain,self.assignmentToGrade)
 
     def m_finalizeGrade(self, student: c_Student):
-        student.initialFeedback = student.initialFeedback .replace(
-            '?!?', str(student.grade))
+        student.s_initialFeedback = student.s_initialFeedback .replace(
+            '?!?', str(student.f_grade))
 
     def m_createFeedbackFile(self, filename: str, feedback: str):
         with open(filename, "w+") as f:
@@ -37,7 +38,7 @@ class c_AssignmentTrack():
             return output
 
     def m_Decompress(self):
-        for student in self.gradeMain.listOfStudents.values():
+        for student in self.gradeMain.d_listOfStudents.values():
             student.m_Decompress(self.zipFile)
 
     def _CheckFile_(self, student, filename):
@@ -80,11 +81,3 @@ class c_AssignmentTrack():
 
     def m_editFile(self, filename: str):
         subprocess.run(["code", "-r", f"{filename}"])
-
-
-class c_GradeShell(c_AssignmentTrack):
-    def __init__(self):
-        print("GradeShell")
-
-    def m_grade(self, name):
-        pass

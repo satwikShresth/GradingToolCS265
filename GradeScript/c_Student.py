@@ -6,18 +6,18 @@ from dateutil import parser
 
 class c_Student():
     def __init__(self, name, grader="Satwik Shresth", startPoints: float = 100, submitLog="submit.log", gradeFile="grade.file", duedate="Thursday, February 2, 2023 11:59:59 PM EST"):
-        self.name = name
-        self.grader = grader
-        self.grade = startPoints
-        self.submitLog = submitLog
-        self.feedbackFile = gradeFile
-        self.initialFeedback = self.m_InitFeedback()
-        self.filenames = []
-        self.feedback = self.m_InitFeedback()
+        self.s_name:str = name
+        self.s_grader:str = grader
+        self.f_grade:float = startPoints
+        self.s_submitLog:str = submitLog
+        self.s_feedbackFile:str = gradeFile
+        self.s_initialFeedback:str = self.m_InitFeedback()
+        self.ls_filenames:list = []
+        self.s_feedback:str = self.m_InitFeedback()
         self.m_CheckSubmissionTime(duedate)
 
     def m_InitFeedback(self):
-        return self.m_FeedbackHeader(os.path.join(os.getcwd(), self.name, self.submitLog)) + f"Grader: {self.grader}\nGrade: ?!?\n\nFeedback:-\n"
+        return self.m_FeedbackHeader(os.path.join(os.getcwd(), self.s_name, self.s_submitLog)) + f"Grader: {self.s_grader}\nGrade: ?!?\n\nFeedback:-\n"
 
     def m_FeedbackHeader(self, filePath) -> str:
         with open(filePath, 'r') as file:
@@ -34,7 +34,7 @@ class c_Student():
 
     def _CheckSubmissionTime_(self, student, dueDate):
         timeSubmission = self._ExtractDate_(
-            os.path.join(os.getcwd(), student, self.submitLog))
+            os.path.join(os.getcwd(), student, self.s_submitLog))
         timeSubmission = parser.parse(timeSubmission)
         timeDue = parser.parse(dueDate)
         timeDiffernce = timeDue - timeSubmission
@@ -45,21 +45,21 @@ class c_Student():
         if second < 0:
 
             if hours >= 1 and hours < 24:
-                self.grade -= 10
-                self.feedback += f" {-10:<6} Late Submission:  {int(hours):02d}hours {int(minutes):02d}minutes {int(seconds):02d}seconds\n"
+                self.i_grade -= 10
+                self.s_feedback += f" {-10:<6} Late Submission:  {int(hours):02d}hours {int(minutes):02d}minutes {int(seconds):02d}seconds\n"
             elif hours >= 24 and hours < 48:
-                self.grade -= 20
-                self.feedback += f" {-20:<6} Late Submission: {int(hours):02d}hours {int(minutes):02d}minutes {int(seconds):02d}seconds\n"
+                self.i_grade -= 20
+                self.s_feedback += f" {-20:<6} Late Submission: {int(hours):02d}hours {int(minutes):02d}minutes {int(seconds):02d}seconds\n"
             elif hours >= 48:
-                self.grade = 0
-                self.feedback += f" {0:<6} Late Submission:  {int(hours):02d}hours {int(minutes):02d}minutes {int(seconds):02d}seconds\n"
+                self.i_grade = 0
+                self.s_feedback += f" {0:<6} Late Submission:  {int(hours):02d}hours {int(minutes):02d}minutes {int(seconds):02d}seconds\n"
 
     def m_CheckSubmissionTime(self, duedate="Thursday, February 2, 2023 11:59:59 PM EST"):
-        self._CheckSubmissionTime_(self.name, duedate)
+        self._CheckSubmissionTime_(self.s_name, duedate)
 
     def m_CreateGradeFile(self):
-        with open(os.path.join(os.getcwd(), self.name, self.feedbackFile), 'w') as file:
-            file.write(self.feedback)
+        with open(os.path.join(os.getcwd(), self.s_name, self.s_feedbackFile), 'w') as file:
+            file.write(self.s_feedback)
 
     def _Decompress_(self, student, filename):
         currentWorkingDir = os.getcwd()
@@ -74,8 +74,8 @@ class c_Student():
         os.chdir(currentWorkingDir)
 
     def m_Decompress(self, filename):
-        if os.path.isfile(os.path.join(os.getcwd(), self.name, filename)):
-            self._Decompress_(self.name, filename)
+        if os.path.isfile(os.path.join(os.getcwd(), self.s_name, filename)):
+            self._Decompress_(self.s_name, filename)
         else:
             ipt = "y"
             while (ipt != "q"):
@@ -84,10 +84,10 @@ class c_Student():
                         print(file)
                 ipt = input("Give a file name[q to exit]: ")
                 if ipt == "q":
-                    self.feedback += f"{filename} does not exist\n"
-                elif os.path.isfile(os.path.join(os.getcwd(), self.name, ipt)):
-                    self._Decompress_(self.name, ipt)
-                    self.feedback += f"Bad file name: {ipt} found instead of {filename}\n"
+                    self.s_feedback += f"{filename} does not exist\n"
+                elif os.path.isfile(os.path.join(os.getcwd(), self.s_name, ipt)):
+                    self._Decompress_(self.s_name, ipt)
+                    self.s_feedback += f"Bad file name: {ipt} found instead of {filename}\n"
                     ipt = "q"
                 else:
                     print("Try Again!!")
