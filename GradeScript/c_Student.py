@@ -1,6 +1,5 @@
 import os
 import re
-import zipfile
 from dateutil import parser
 
 
@@ -45,13 +44,13 @@ class c_Student():
         if second < 0:
 
             if hours >= 1 and hours < 24:
-                self.i_grade -= 10
+                self.f_grade -= 10
                 self.s_feedback += f" {-10:<6} Late Submission:  {int(hours):02d}hours {int(minutes):02d}minutes {int(seconds):02d}seconds\n"
             elif hours >= 24 and hours < 48:
-                self.i_grade -= 20
+                self.f_grade -= 20
                 self.s_feedback += f" {-20:<6} Late Submission: {int(hours):02d}hours {int(minutes):02d}minutes {int(seconds):02d}seconds\n"
             elif hours >= 48:
-                self.i_grade = 0
+                self.f_grade = 0
                 self.s_feedback += f" {0:<6} Late Submission:  {int(hours):02d}hours {int(minutes):02d}minutes {int(seconds):02d}seconds\n"
 
     def m_CheckSubmissionTime(self, duedate="Thursday, February 2, 2023 11:59:59 PM EST"):
@@ -60,34 +59,3 @@ class c_Student():
     def m_CreateGradeFile(self):
         with open(os.path.join(os.getcwd(), self.s_name, self.s_feedbackFile), 'w') as file:
             file.write(self.s_feedback)
-
-    def _Decompress_(self, student, filename):
-        currentWorkingDir = os.getcwd()
-        path = os.path.join(os.getcwd(), student)
-        print(f'Changing working directory to {path}')
-        os.chdir(path)
-
-        with zipfile.ZipFile(filename, "r") as file:
-            file.extractall()
-
-        print(f'Changing working directory back to {currentWorkingDir}')
-        os.chdir(currentWorkingDir)
-
-    def m_Decompress(self, filename):
-        if os.path.isfile(os.path.join(os.getcwd(), self.s_name, filename)):
-            self._Decompress_(self.s_name, filename)
-        else:
-            ipt = "y"
-            while (ipt != "q"):
-                for file in os.listdir("."):
-                    if os.path.isfile(file):
-                        print(file)
-                ipt = input("Give a file name[q to exit]: ")
-                if ipt == "q":
-                    self.s_feedback += f"{filename} does not exist\n"
-                elif os.path.isfile(os.path.join(os.getcwd(), self.s_name, ipt)):
-                    self._Decompress_(self.s_name, ipt)
-                    self.s_feedback += f"Bad file name: {ipt} found instead of {filename}\n"
-                    ipt = "q"
-                else:
-                    print("Try Again!!")

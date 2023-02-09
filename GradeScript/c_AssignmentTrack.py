@@ -2,6 +2,7 @@ from c_GradeMain import c_GradeMain
 import os
 import subprocess
 import curses
+import zipfile
 from c_Student import c_Student
 from c_TerminalUserInterface import c_termianlUserInterface
 
@@ -37,16 +38,41 @@ class c_AssignmentTrack():
         if (self.m_compileCfile(["gcc", "-ldl", "-o", f"{PATH}/{output}", f"{PATH}/{input}"])):
             return output
 
-    def m_Decompress(self):
-        for student in self.gradeMain.d_listOfStudents.values():
-            student.m_Decompress(self.zipFile)
+    def _Decompress_(self,filename):
+        with zipfile.ZipFile(filename, "r") as file:
+            file.extractall()
 
-    def _CheckFile_(self, student, filename):
+    def m_Decompress(self,student:c_Student):
+        if os.path.isfile(self.zipFile):
+            self._Decompress_(self.zipFile)
+        else:
+            instructions = [
+                f"Student : {student.s_name}", f"Select a file for {self.zipFile}:"]
+            options = [file for file in os.listdir(".")if os.path.isfile(file)]
+            while (len(options)!=0):
+                screen = curses.initscr()
+                selectedData = self.uI.m_terminalUserInterface(
+                    screen, options, instructions)
+                curses.endwin()
+                if (selectedData == "q"):
+                    student.s_initialFeedback += f" {-10:<6} {self.zipFile} does not exist\n"
+                    return False
+                else:
+                    self._Decompress_(selectedData)
+            student.s_initialFeedback += f" {-10:<6} {self.zipFile} does not exist\n"
+            return False
+
+    def m_fileToStringList(self,filename):
+        with open(filename, "r") as file:
+                    fileContents = file.read()
+        return fileContents.splitlines()
+
+
+    def _CheckFile_(self, student:c_Student, filename,points):
         if os.path.isfile(filename):
             return filename
         else:
-            instructions = [
-                f"Student : {student.name}", f"Select a file for {filename}:"]
+            instructions = [f"Student : {student.s_name}", f"Select a file for {filename}:"]
             options = [file for file in os.listdir(".")if os.path.isfile(file)]
             while (1):
                 screen = curses.initscr()
@@ -54,19 +80,19 @@ class c_AssignmentTrack():
                     screen, options, instructions)
                 curses.endwin()
                 if (selectedData == "q"):
-                    student.initialFeedback += f" {-10:<6} {filename} does not exist\n"
+                    student.s_initialFeedback += f" {-points:<6} {filename} does not exist\n"
                     return False
                 else:
-                    self.m_showFile(selectedData)
-                    instructions = [f"Is {selectedData} Correct?"]
-                    options = ["Yes", "No"]
+                    instruction = self.m_fileToStringList(selectedData)+[f"Is {selectedData} Correct?"]
+                    option = ["Yes","No"]
                     screen = curses.initscr()
-                    ans = self.uI.m_terminalUserInterface(
-                        screen, options, instructions)
+                    response = self.uI.m_terminalUserInterface(screen, option, instruction)
                     curses.endwin()
-                    if (ans != "n"):
-                        student.initialFeedback += f"Bad file name: {selectedData} found instead of {filename}\n"
+                    if (response == option[0]):
+                        student.s_initialFeedback += f"Bad file name: {selectedData} found instead of {filename}\n"
                         return selectedData
+            student.s_initialFeedback += f" {-points:<6} {filename} does not exist\n"
+            return False
 
     def m_compileCfile(self, proc):
         result = subprocess.run(
@@ -81,3 +107,31 @@ class c_AssignmentTrack():
 
     def m_editFile(self, filename: str):
         subprocess.run(["code", "-r", f"{filename}"])
+
+    def m_regrade(self, student: c_Student, proc,points):
+        filename = proc[-1]
+        instructions = [filename,f"Student : {student.s_name}",
+                        f"Grade   : {points[1]-points[0]}/{points[1]}",
+                        "Select an option:"]
+        options = ["Edit File", "Recompile", "Regrade","Continue"]
+        while True:
+            screen = curses.initscr()
+            selectedData = self.uI.m_terminalUserInterface(
+                screen, options, instructions)
+            curses.endwin()
+            if (selectedData == options[0]):
+                self.m_editFile(filename)
+            elif (selectedData == options[1]):
+                output = self.m_compileCfile(proc)
+                if (output):
+                    print("Compilation Successful")
+                    input()
+                else:
+                    print(output)
+                    input()
+            elif (selectedData == options[2]):
+                method = f"self.m_Check{proc[-1]}(student,{points[1]})"
+                exec(method)                
+            elif (selectedData == options[3]):
+                break
+    
