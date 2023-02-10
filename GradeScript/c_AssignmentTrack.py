@@ -11,12 +11,12 @@ PATH = "/home/ss5278/GradeScript"
 
 class c_AssignmentTrack():
     def __init__(self, GradeMain: c_GradeMain, assignment):
-        self.uI:c_termianlUserInterface = c_termianlUserInterface()
-        self.gradeMain:c_GradeMain = GradeMain
-        self.assignmentToGrade:str = assignment
-        self.zipFile:str = ""
-        self.funFact:str = f"\n\nFun Fact: Your assignment is graded and mailed to you using a script.\n{' ':10}It created by all the cool proggramming language, techniques and tools you are learning in this class\n{' ':10}i.e. Bash,C,awk,grep,python,cat"
-        self.foote:str = "\nBest,\nSatwik Shresth\nBSc Computer Science\nCollege of Computing and Informatics\nDrexel University\nPhiladelphia, PA 19104\nsatwik.shresth@drexel.edu\n"
+        self.uI: c_termianlUserInterface = c_termianlUserInterface()
+        self.gradeMain: c_GradeMain = GradeMain
+        self.assignmentToGrade: str = assignment
+        self.zipFile: str = ""
+        self.funFact: str = f"\n\nFun Fact: Your assignment is graded and mailed to you using a script.\n{' ':10}It created by all the cool proggramming language, techniques and tools you are learning in this class\n{' ':10}i.e. Bash,C,awk,grep,python,cat"
+        self.foote: str = "\nBest,\nSatwik Shresth\nBSc Computer Science\nCollege of Computing and Informatics\nDrexel University\nPhiladelphia, PA 19104\nsatwik.shresth@drexel.edu\n"
 
     def m_initalizer(self):
         if self.assignmentToGrade == "Lab5":
@@ -24,10 +24,10 @@ class c_AssignmentTrack():
             return c_GradeLab5(self.gradeMain)
         else:
             from c_GradeShell import c_GradeShell
-            return c_GradeShell(self.gradeMain,self.assignmentToGrade)
+            return c_GradeShell(self.gradeMain, self.assignmentToGrade)
 
     def m_finalizeGrade(self, student: c_Student):
-        student.s_initialFeedback = student.s_initialFeedback .replace(
+        student.s_feedback = student.s_feedback .replace(
             '?!?', str(student.f_grade))
 
     def m_createFeedbackFile(self, filename: str, feedback: str):
@@ -38,22 +38,19 @@ class c_AssignmentTrack():
         if (self.m_compileCfile(["gcc", "-ldl", "-o", f"{PATH}/{output}", f"{PATH}/{input}"])):
             return output
 
-    def _Decompress_(self,filename):
+    def _Decompress_(self, filename):
         with zipfile.ZipFile(filename, "r") as file:
             file.extractall()
 
-    def m_Decompress(self,student:c_Student):
+    def m_Decompress(self, student: c_Student):
         if os.path.isfile(self.zipFile):
             self._Decompress_(self.zipFile)
         else:
             instructions = [
                 f"Student : {student.s_name}", f"Select a file for {self.zipFile}:"]
             options = [file for file in os.listdir(".")if os.path.isfile(file)]
-            while (len(options)!=0):
-                screen = curses.initscr()
-                selectedData = self.uI.m_terminalUserInterface(
-                    screen, options, instructions)
-                curses.endwin()
+            while (len(options) != 0):
+                selectedData = self.uI.m_terminalUserInterface(options, instructions)
                 if (selectedData == "q"):
                     student.s_initialFeedback += f" {-10:<6} {self.zipFile} does not exist\n"
                     return False
@@ -62,34 +59,33 @@ class c_AssignmentTrack():
             student.s_initialFeedback += f" {-10:<6} {self.zipFile} does not exist\n"
             return False
 
-    def m_fileToStringList(self,filename):
+    def m_fileToStringList(self, filename):
         with open(filename, "r") as file:
-                    fileContents = file.read()
-        return fileContents.splitlines()
+            fileContents = file.readlines()
+        return fileContents
 
-
-    def _CheckFile_(self, student:c_Student, filename,points):
+    def _CheckFile_(self, student: c_Student, filename, points):
         if os.path.isfile(filename):
             return filename
         else:
-            instructions = [f"Student : {student.s_name}", f"Select a file for {filename}:"]
+            instructions = [
+                f"Student : {student.s_name}", f"Select a file for {filename}:"]
             options = [file for file in os.listdir(".")if os.path.isfile(file)]
             while (1):
-                screen = curses.initscr()
                 selectedData = self.uI.m_terminalUserInterface(
-                    screen, options, instructions)
-                curses.endwin()
+                     options, instructions)
                 if (selectedData == "q"):
                     student.s_initialFeedback += f" {-points:<6} {filename} does not exist\n"
                     return False
                 else:
-                    instruction = self.m_fileToStringList(selectedData)+[f"Is {selectedData} Correct?"]
-                    option = ["Yes","No"]
-                    screen = curses.initscr()
-                    response = self.uI.m_terminalUserInterface(screen, option, instruction)
-                    curses.endwin()
+                    instruction = self.m_fileToStringList(
+                        selectedData)+[f"Is {selectedData} Correct?"]
+                    option = ["Yes", "No"]
+                    response = self.uI.m_terminalUserInterface(
+                        option, instruction)
                     if (response == option[0]):
                         student.s_initialFeedback += f"Bad file name: {selectedData} found instead of {filename}\n"
+                        student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
                         return selectedData
             student.s_initialFeedback += f" {-points:<6} {filename} does not exist\n"
             return False
@@ -101,37 +97,8 @@ class c_AssignmentTrack():
             return result.stderr.decode()
         else:
             return True
-
     def m_showFile(self, filename: str):
         subprocess.run(["less", f"{filename}"])
 
     def m_editFile(self, filename: str):
         subprocess.run(["code", "-r", f"{filename}"])
-
-    def m_regrade(self, student: c_Student, proc,points):
-        filename = proc[-1]
-        instructions = [filename,f"Student : {student.s_name}",
-                        f"Grade   : {points[1]-points[0]}/{points[1]}",
-                        "Select an option:"]
-        options = ["Edit File", "Recompile", "Regrade","Continue"]
-        while True:
-            screen = curses.initscr()
-            selectedData = self.uI.m_terminalUserInterface(
-                screen, options, instructions)
-            curses.endwin()
-            if (selectedData == options[0]):
-                self.m_editFile(filename)
-            elif (selectedData == options[1]):
-                output = self.m_compileCfile(proc)
-                if (output):
-                    print("Compilation Successful")
-                    input()
-                else:
-                    print(output)
-                    input()
-            elif (selectedData == options[2]):
-                method = f"self.m_Check{proc[-1]}(student,{points[1]})"
-                exec(method)                
-            elif (selectedData == options[3]):
-                break
-    

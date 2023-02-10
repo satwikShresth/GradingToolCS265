@@ -5,14 +5,14 @@ from dateutil import parser
 
 class c_Student():
     def __init__(self, name, grader="Satwik Shresth", startPoints: float = 100, submitLog="submit.log", gradeFile="grade.file", duedate="Thursday, February 2, 2023 11:59:59 PM EST"):
-        self.s_name:str = name
-        self.s_grader:str = grader
-        self.f_grade:float = startPoints
-        self.s_submitLog:str = submitLog
-        self.s_feedbackFile:str = gradeFile
-        self.s_initialFeedback:str = self.m_InitFeedback()
-        self.ls_filenames:list = []
-        self.s_feedback:str = self.m_InitFeedback()
+        self.s_name: str = name
+        self.s_grader: str = grader
+        self.f_grade: float = startPoints
+        self.s_submitLog: str = submitLog
+        self.s_feedbackFile: str = gradeFile
+        self.s_initialFeedback: str = ""
+        self.ls_filenames: list = []
+        self.s_feedback: str = self.m_InitFeedback()
         self.m_CheckSubmissionTime(duedate)
 
     def m_InitFeedback(self):
@@ -55,7 +55,3 @@ class c_Student():
 
     def m_CheckSubmissionTime(self, duedate="Thursday, February 2, 2023 11:59:59 PM EST"):
         self._CheckSubmissionTime_(self.s_name, duedate)
-
-    def m_CreateGradeFile(self):
-        with open(os.path.join(os.getcwd(), self.s_name, self.s_feedbackFile), 'w') as file:
-            file.write(self.s_feedback)
