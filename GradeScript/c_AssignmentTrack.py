@@ -61,7 +61,7 @@ class c_AssignmentTrack():
 
     def m_fileToStringList(self, filename):
         with open(filename, "r") as file:
-            fileContents = file.readlines()
+            fileContents = [line for line in file.readlines() if line.strip()]
         return fileContents
 
     def _CheckFile_(self, student: c_Student, filename, points):
