@@ -13,14 +13,15 @@ class c_Shell():
         self.o_uI = c_termianlUserInterface()
         if (self.m_initalizer() == False):
             print("Couldn't initalize the script")
+            curses.endwin()
             exit(0)
         c_DirOrganizer().m_organize()
         self.o_gradeMain: c_GradeMain = c_GradeMain()
         self.mail: c_Mail = c_Mail(self.o_gradeMain)
         self.m_loadProgress()
         self.i_assignmentsToGrade: int = len(self.o_gradeMain.d_listOfStudents)
-        assignment: c_AssignmentTrack = c_AssignmentTrack(
-            self.o_gradeMain, self.assignmentToGrade)
+        
+        assignment: c_AssignmentTrack = c_AssignmentTrack(self.o_gradeMain,self.o_uI,self.assignmentToGrade)
         self.o_grade = assignment.m_initalizer()
         self.m_menu()
 
@@ -28,11 +29,10 @@ class c_Shell():
         # Pre-Req
         self.currentWorkingDir = os.getcwd()
         os.chdir("../TA-CS265-1")
-        curses.initscr()
-        curses.endwin()
         path = self.o_uI._selectDirectory_()
         # print(f'Changing working directory to {path}')
         if path == "q":
+            curses.endwin()
             exit(0)
         os.chdir(path)
 
@@ -108,10 +108,12 @@ class c_Shell():
                 # Post-Req
                 # print(f'Changing working directory back to {currentWorkingDir}')
                 os.chdir(self.currentWorkingDir)
+                curses.endwin()
                 exit(0)
-            instructions = [f"Return to Main Menu"]
-            options = ["Yes"]
+            instructions = [f"Returning to Main Menu"]
+            options = ["Continue"]
             self.o_uI.m_terminalUserInterface(options, instructions)
+            
 
     def m_shellStruct(self):
         assignmentsGraded = len(self.o_gradeMain.d_listOfStudentsGraded)

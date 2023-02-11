@@ -1,4 +1,3 @@
-import curses
 import os
 import subprocess
 import json
@@ -13,8 +12,8 @@ PATH = "/home/ss5278/GradeScript"
 
 
 class c_GradeLab5(c_AssignmentTrack):
-    def __init__(self, GradeMain: c_GradeMain, jsonFilename="Lab5.json"):
-        self.uI = c_termianlUserInterface()
+    def __init__(self, GradeMain: c_GradeMain,uI: c_termianlUserInterface, jsonFilename="Lab5.json"):
+        self.uI = uI
         self.f_gradeMain = GradeMain
         self.m_initalizeJson(jsonFilename)
         self.f_gradeQuickSortExe = self.m_compileTestingExe(
