@@ -1,7 +1,6 @@
 from c_GradeMain import c_GradeMain
 import os
 import subprocess
-import curses
 import zipfile
 from c_Student import c_Student
 from c_TerminalUserInterface import c_termianlUserInterface
@@ -10,8 +9,8 @@ PATH = "/home/ss5278/GradeScript"
 
 
 class c_AssignmentTrack():
-    def __init__(self, GradeMain: c_GradeMain, assignment):
-        self.uI: c_termianlUserInterface = c_termianlUserInterface()
+    def __init__(self, GradeMain: c_GradeMain,uI: c_termianlUserInterface, assignment):
+        self.uI= uI
         self.gradeMain: c_GradeMain = GradeMain
         self.assignmentToGrade: str = assignment
         self.zipFile: str = ""
@@ -21,10 +20,10 @@ class c_AssignmentTrack():
     def m_initalizer(self):
         if self.assignmentToGrade == "Lab5":
             from c_GradeLab5 import c_GradeLab5
-            return c_GradeLab5(self.gradeMain)
+            return c_GradeLab5(self.gradeMain,self.uI)
         else:
             from c_GradeShell import c_GradeShell
-            return c_GradeShell(self.gradeMain, self.assignmentToGrade)
+            return c_GradeShell(self.gradeMain,self.uI,self.assignmentToGrade)
 
     def m_finalizeGrade(self, student: c_Student):
         student.s_feedback = student.s_feedback .replace(

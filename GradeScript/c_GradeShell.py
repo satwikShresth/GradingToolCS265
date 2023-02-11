@@ -4,9 +4,9 @@ from c_TerminalUserInterface import c_termianlUserInterface
 
 
 class c_GradeShell(c_AssignmentTrack):
-    def __init__(self, GradeMain: c_GradeMain, assignmentName):
+    def __init__(self, GradeMain: c_GradeMain,uI: c_termianlUserInterface, assignmentName):
         self.s_assignmentName: str = assignmentName
-        self.o_uI: c_termianlUserInterface = c_termianlUserInterface()
+        self.o_uI= uI
         self.o_gradeMain: c_GradeMain = GradeMain
         self.m_initalize()
 
