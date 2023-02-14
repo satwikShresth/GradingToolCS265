@@ -14,7 +14,7 @@ PATH = "/home/ss5278/GradeScript"
 class c_GradeLab5(c_AssignmentTrack):
     def __init__(self, GradeMain: c_GradeMain,uI: c_termianlUserInterface, jsonFilename="Lab5.json"):
         self.uI = uI
-        self.f_gradeMain = GradeMain
+        self.gradeMain = GradeMain
         self.m_initalizeJson(jsonFilename)
         self.f_gradeQuickSortExe = self.m_compileTestingExe(
             "testQuickSort", "testQuickSort.c")
@@ -26,6 +26,7 @@ class c_GradeLab5(c_AssignmentTrack):
             data = json.load(f)
 
         try:
+            self.dueDate = data['dueDate']
             self.filesReq = data['filesReq']
             zipFile = data["zipFile"]
             if zipFile != None:
@@ -64,29 +65,29 @@ class c_GradeLab5(c_AssignmentTrack):
                 break
 
     def m_grade(self, name):
-        student: c_Student = self.f_gradeMain.d_listOfStudents[name]
+        student: c_Student = self.gradeMain.d_listOfStudents[name]
         currentWorkingDir = os.getcwd()
         path = os.path.join(os.getcwd(), name)
         # print(f'Changing working directory to {path}')
         os.chdir(path)
         student.ls_filenames = list(range(3))
-        # self.m_Decompress(student)
+        self.m_Decompress(student,self.zipFile)
         student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
         student.s_initialFeedback += f"Part-1 Reverse the string\n"
         student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-        self.m_CheckQuestion1(student, 10)
+        self.m_CheckQuestion1(student, 8)
         student.s_feedback += student.s_initialFeedback
         student.s_initialFeedback = ""
         student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
         student.s_initialFeedback += f"Part-2 Reverse the string[*pointers]\n"
         student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-        self.m_CheckQuestion2(student, 15)
+        self.m_CheckQuestion2(student, 8)
         student.s_feedback += student.s_initialFeedback
         student.s_initialFeedback = ""
         student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
         student.s_initialFeedback += f"Part-3 Reading lines from a file\n"
         student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-        self.m_CheckQuestion3(student, 15)
+        self.m_CheckQuestion3(student, 8)
         student.s_feedback += student.s_initialFeedback
         student.s_initialFeedback = ""
         self.m_finalizeGrade(student)
@@ -211,6 +212,8 @@ class c_GradeLab5(c_AssignmentTrack):
         else:
             student.f_grade -= totalPoint
             return
+
+            
     def m_processFile(self,fileList:list,i_feedback,question):
         file = f"\n".join([i for i in fileList if i != ""])
         feedback = "\nFeedback:\n"

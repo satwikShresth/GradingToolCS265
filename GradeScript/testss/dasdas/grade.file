@@ -1,0 +1,19 @@
+Name: Satwik Shresth (ss5278)
+Assignment: Lab 5
+Date Submitted: Thursday, February 2, 2023 11:19:17 PM EST
+Grade: 98
+
+Feedback:-
+
+Part-1 Reverse the string
+       All test strings passed
+
+Part-2 Reverse the string[*pointers]
+-2     Bitch
+       All test strings passed
+
+Part-3 Modifying split function accept 1 array, 2 int* and return int*
+  Testing QuickSort Function
+      All Test Strings Passed
+  Testing Split Function
+      All Test Strings Passed

@@ -1,7 +1,7 @@
 from c_GradeMain import c_GradeMain
 import os
 import subprocess
-import zipfile
+
 from c_Student import c_Student
 from c_TerminalUserInterface import c_termianlUserInterface
 
@@ -27,7 +27,7 @@ class c_AssignmentTrack():
 
     def m_finalizeGrade(self, student: c_Student):
         student.s_feedback = student.s_feedback .replace(
-            '?!?', str(student.f_grade))
+            '?!?', str(student.f_grade) if student.f_grade >= 0 else str(0))
 
     def m_createFeedbackFile(self, filename: str, feedback: str):
         with open(filename, "w+") as f:
@@ -37,26 +37,21 @@ class c_AssignmentTrack():
         if (self.m_compileCfile(["gcc", "-ldl", "-o", f"{PATH}/{output}", f"{PATH}/{input}"])):
             return output
 
-    def _Decompress_(self, filename):
-        with zipfile.ZipFile(filename, "r") as file:
-            file.extractall()
-
-    def m_Decompress(self, student: c_Student):
-        if os.path.isfile(self.zipFile):
-            self._Decompress_(self.zipFile)
+    def m_Decompress(self,student:c_Student,filename):
+        if os.path.isfile(filename):
+            self.gradeMain.m_Decompress(filename)
         else:
             instructions = [
-                f"Student : {student.s_name}", f"Select a file for {self.zipFile}:"]
+                f"Student : {student.s_name}", f"Select a file for {filename}:"]
             options = [file for file in os.listdir(".")if os.path.isfile(file)]
-            while (len(options) != 0):
+            while (1):
                 selectedData = self.uI.m_terminalUserInterface(options, instructions)
-                if (selectedData == "q"):
-                    student.s_initialFeedback += f" {-10:<6} {self.zipFile} does not exist\n"
-                    return False
-                else:
-                    self._Decompress_(selectedData)
-            student.s_initialFeedback += f" {-10:<6} {self.zipFile} does not exist\n"
-            return False
+                student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+                student.s_initialFeedback += f"Bad file name: {selectedData} found instead of {filename}\n"
+                student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+                self.gradeMain.m_Decompress(selectedData)
+                break
+
 
     def m_fileToStringList(self, filename):
         with open(filename, "r") as file:

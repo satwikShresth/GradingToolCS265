@@ -3,19 +3,22 @@ import curses
 
 
 class c_termianlUserInterface():
+    #initilizing readable characters and screen
     def __init__(self) -> None:
-        curses.initscr();curses.endwin();
+        curses.initscr();curses.endwin(); # for some reason this helps in avoiding screen freeze
         self.screen = curses.initscr()
         self.readable_characters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
                         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                         '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '[', ']', '{', '}', '\\', '|', ';', ':', '\'', '\"', ',', '.', '<', '>', '/', '?'," "]
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    def _refreshContent_(self):
+    # This function creates a list of only dir 
+    def _refreshContent_(self)->None:
         self.dir_content = [dir for dir in self.dir_content if os.path.isdir(dir)]
-
-    def checkMove(self):
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #checks the keystroke if its pointing up or down
+    #return true if enter is pressed
+    def checkMove(self)->bool:
         if self.key == curses.KEY_UP:
             if self.selected_item > 0:
                 self.selected_item -= 1
@@ -29,10 +32,9 @@ class c_termianlUserInterface():
         elif self.key == ord("\n"):
             return True
         return False
-
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    def _selectDirectory_(self):
+    #creates a list of directory and all user to select one
+    def _selectDirectory_(self)->str:
         self.m_preReq()
         path = os.getcwd()
         self.dir_content = os.listdir(path)
@@ -68,8 +70,9 @@ class c_termianlUserInterface():
                 return "q"
 
         return os.path.join(path, self.dir_content[self.selected_item])
-
-    def m_terminalUserInterface(self, options, instructions):
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #Puts instruction on the screen to display and options to choose from
+    def m_terminalUserInterface(self, options:list[str], instructions:list[str])->str:
 
         self.m_preReq()
         self.instructions = instructions
@@ -83,8 +86,8 @@ class c_termianlUserInterface():
         return self.dir_content[self.selected_item]
             
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    def m_refresh(self):
+    #refreshes the screen with new information evertime its called
+    def m_refresh(self)-> None:
         self.win.clear()
         self.idx = 0
         for instruction in self.instructions:
@@ -100,10 +103,9 @@ class c_termianlUserInterface():
         # Refresh the screen
         self.win.refresh()
         self.key = self.screen.getch()
-
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    def m_preReq(self):
+    #initlizes values
+    def m_preReq(self)->None:
         curses.cbreak()
         curses.curs_set(0)
         self.screen.keypad(1)
@@ -112,7 +114,7 @@ class c_termianlUserInterface():
         self.selected_item = 0
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+    #creates a interface for user to add comments
     def m_feedbackForm(self,instructions):
         self.m_preReq()
         self.dir_content = ["Add Line","Pop Line","Done"]
@@ -159,4 +161,5 @@ class c_termianlUserInterface():
 
         return self.dir_content[:-3] if len(self.dir_content) >3 else None 
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
