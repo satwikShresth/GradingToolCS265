@@ -1,13 +1,13 @@
 import os
 from c_Student import c_Student
 from tabulate import tabulate
-from zipfile import ZipFile
+
 
 class c_GradeMain:
-    def __init__(self, Grade=100, grader="Satwik Shresth"):
+    def __init__(self,dueDate,Grade=100, grader="Satwik Shresth"):
         self.f_grade: float = Grade
         self.s_grader: str = grader
-        self.d_listOfStudents: dict = dict()
+        self.d_listOfStudents: dict = self.m_StudentsDict(dueDate)
         self.d_listOfStudentsGraded: dict = dict()
         self.s_tabFileName = "grades.tab"
 
@@ -31,17 +31,12 @@ class c_GradeMain:
         with open(self.s_tabFileName, 'w') as file:
             file.write(data)
     
-    def m_Decompress(self,filename):
-        if os.path.isfile(filename):
-            with ZipFile(filename, "r") as file:
-                file.extractall(".")
-            os.remove(filename)
 
     def m_DecompressAll(self,filename):
-        for student in self.d_listOfStudents.keys():
+        for name,student in self.d_listOfStudents.values():
             currentWorkingDir = os.getcwd()
-            os.chdir(os.path.join(currentWorkingDir,student))
-            self.m_Decompress(filename)
+            os.chdir(os.path.join(currentWorkingDir,name))
+            student.m_Decompress(filename)
             os.chdir(currentWorkingDir)
 
             

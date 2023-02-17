@@ -4,7 +4,6 @@ import json
 import difflib
 from c_TerminalUserInterface import c_termianlUserInterface
 from c_AssignmentTrack import c_AssignmentTrack
-from c_GradeMain import c_GradeMain
 from c_Student import c_Student
 
 
@@ -12,9 +11,8 @@ PATH = "/home/ss5278/GradeScript"
 
 
 class c_GradeLab5(c_AssignmentTrack):
-    def __init__(self, GradeMain: c_GradeMain,uI: c_termianlUserInterface, jsonFilename="Lab5.json"):
-        self.uI = uI
-        self.gradeMain = GradeMain
+    def __init__(self,uI: c_termianlUserInterface, jsonFilename="Lab5.json"):
+        self.o_uI = uI
         self.m_initalizeJson(jsonFilename)
         self.f_gradeQuickSortExe = self.m_compileTestingExe(
             "testQuickSort", "testQuickSort.c")
@@ -34,7 +32,7 @@ class c_GradeLab5(c_AssignmentTrack):
         except Exception as e:
             instructions = [f"Data Required not present in jsonFile", f"{e}"]
             options = [f"Continue"]
-            self.uI.m_terminalUserInterface(options, instructions)
+            self.o_uI.m_terminalUserInterface(options, instructions)
             exit(0)
 
         try:
@@ -42,12 +40,12 @@ class c_GradeLab5(c_AssignmentTrack):
         except Exception as e:
             instructions = [f"Data Required not present in jsonFile", f"{e}"]
             options = [f"Continue"]
-            self.uI.m_terminalUserInterface(options, instructions)
+            self.o_uI.m_terminalUserInterface(options, instructions)
             exit(0)
 
         instructions = [f"Json file {filename} has been initialized"]
         options = ["Continue"]
-        self.uI.m_terminalUserInterface(options, instructions)
+        self.o_uI.m_terminalUserInterface(options, instructions)
 
     def m_gradedReport(self, student: c_Student):
         self.m_showFile(student.s_feedbackFile)
@@ -55,7 +53,7 @@ class c_GradeLab5(c_AssignmentTrack):
                         f"Grade   : {student.f_grade}/100", "Select an option:"]
         options = ["Edit grade.file", "Show grade.file", "Continue"]
         while True:
-            selectedData = self.uI.m_terminalUserInterface(
+            selectedData = self.o_uI.m_terminalUserInterface(
                 options, instructions)
             if (selectedData == options[0]):
                 self.m_editFile(student.s_feedbackFile)
@@ -64,32 +62,37 @@ class c_GradeLab5(c_AssignmentTrack):
             elif (selectedData == options[2]):
                 break
 
-    def m_grade(self, name):
-        student: c_Student = self.gradeMain.d_listOfStudents[name]
+    def m_grade(self,student:c_Student):
+        name = student.s_name
         currentWorkingDir = os.getcwd()
         path = os.path.join(os.getcwd(), name)
         # print(f'Changing working directory to {path}')
         os.chdir(path)
         student.ls_filenames = list(range(3))
-        self.m_Decompress(student,self.zipFile)
-        student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-        student.s_initialFeedback += f"Part-1 Reverse the string\n"
-        student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-        self.m_CheckQuestion1(student, 8)
-        student.s_feedback += student.s_initialFeedback
-        student.s_initialFeedback = ""
-        student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-        student.s_initialFeedback += f"Part-2 Reverse the string[*pointers]\n"
-        student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-        self.m_CheckQuestion2(student, 8)
-        student.s_feedback += student.s_initialFeedback
-        student.s_initialFeedback = ""
-        student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-        student.s_initialFeedback += f"Part-3 Reading lines from a file\n"
-        student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-        self.m_CheckQuestion3(student, 8)
-        student.s_feedback += student.s_initialFeedback
-        student.s_initialFeedback = ""
+        if self.m_Decompress(student,self.zipFile):
+            student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+            student.s_initialFeedback += f"Part-1 Reverse the string\n"
+            student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+            self.m_CheckQuestion1(student, 8)
+            student.s_feedback += student.s_initialFeedback
+            student.s_initialFeedback = ""
+            student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+            student.s_initialFeedback += f"Part-2 Reverse the string[*pointers]\n"
+            student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+            self.m_CheckQuestion2(student, 8)
+            student.s_feedback += student.s_initialFeedback
+            student.s_initialFeedback = ""
+            student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+            student.s_initialFeedback += f"Part-3 Reading lines from a file\n"
+            student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+            self.m_CheckQuestion3(student, 8)
+            student.s_feedback += student.s_initialFeedback
+            student.s_initialFeedback = ""
+        else:
+            student.s_feedback += f"-----------------------------------------------------------------------\n"
+            student.s_feedback += f"No zipFile found\n"
+            student.s_feedback += f"-----------------------------------------------------------------------\n"
+            student.f_grade = 0
         self.m_finalizeGrade(student)
         self.m_createFeedbackFile(student.s_feedbackFile, student.s_feedback)
         self.m_gradedReport(student)
@@ -109,11 +112,11 @@ class c_GradeLab5(c_AssignmentTrack):
                 student.s_initialFeedback += f" {-totalPoints:<6}Error:{process[1]}\n"
                 student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
                 return -(totalPoints)
-            output = ":".join(process[1].split(":")[2::])
+            output = process[1]
             matcher = difflib.SequenceMatcher(None, output, testString[::-1])
             similarity = matcher.ratio() * 100
-            if (similarity < 96):
-                pointsDeduct -= (totalPoints/5)
+            if (testString[::-1] not in output):
+                pointsDeduct -= (totalPoints/len(self.testStrings["Question1"]))
                 student.s_initialFeedback += f" {-pointsPerTest:<6}Failed Test String      -> {testString}\n"
                 student.s_initialFeedback += f" {'':6}your ouput              -> {output}\n"
                 student.s_initialFeedback += f" {'':6}desired output          -> {testString[::-1]}\n"
@@ -121,6 +124,7 @@ class c_GradeLab5(c_AssignmentTrack):
                 student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
         if (pointsDeduct == 0):
             student.s_initialFeedback += f"{'':6} All test strings passed\n"
+            student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
         return pointsDeduct
     
     def m_testQuestion3(self, student: c_Student, outputFile,totalPoints):
@@ -141,13 +145,14 @@ class c_GradeLab5(c_AssignmentTrack):
                 if testString in returnValue:
                     found.append(testString)
             pointsDeduct = len(found)-len(testStrings)
-            if (len(found) != 10 ): student.s_initialFeedback += f"{pointsDeduct} Points"
+            if (len(found) != 10 ): student.s_initialFeedback += f"{pointsDeduct} Point\n"
             student.s_initialFeedback += f"{len(found)} items found out of {len(testStrings)}\n"
             student.s_initialFeedback += f"{'':6}Test String:{testStrings}\n"
             student.s_initialFeedback += f"{'':6}Your output:{found}\n"
             student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
         if (pointsDeduct == 0):
             student.s_initialFeedback += f"{'':6} All tests passed\n"
+            student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
         return pointsDeduct
 
 
@@ -179,7 +184,7 @@ class c_GradeLab5(c_AssignmentTrack):
                 instructions = self.m_fileToStringList(
                     student.ls_filenames[1])+[f"Did {student.s_name} use pointers to solve the question?"]
                 options = ["Yes", "No"]
-                response = self.uI.m_terminalUserInterface(
+                response = self.o_uI.m_terminalUserInterface(
                     options, instructions)
                 if (response == options[0]):
                     pointDeducted = self.m_testQuestion1(student, output,totalPoint)
@@ -214,57 +219,69 @@ class c_GradeLab5(c_AssignmentTrack):
             return
 
             
-    def m_processFile(self,fileList:list,i_feedback,question):
-        file = f"\n".join([i for i in fileList if i != ""])
-        feedback = "\nFeedback:\n"
+    def m_processFile(self,fileContentList:list,i_feedback):
+        file = f"\n".join([i for i in fileContentList if i != ""])
+        i_feedback = "\n"+ f"\n{'':4}* ".join(i_feedback)
+        return file + i_feedback
+        
+    def m_autoCheck(self,student: c_Student,fileContentList,exec):
+        fileContent = f"\n".join([i for i in fileContentList if i != ""])
+        if exec == "Question3":
+            _, output = subprocess.getstatusoutput(f"valgrind --leak-check=full --show-leak-kinds=all ./{exec}")
+        else:
+            testString = self.testStrings["Question1"]
+            _, output = subprocess.getstatusoutput(f"echo {testString} |valgrind --leak-check=full --show-leak-kinds=all ./{exec}")
+        feedback = ["Feedback:"]
+        if "All heap blocks were freed -- no leaks are possible" not in output:
+            feedback.append(f"-1 Point: Memory leaks detected!")
+            student.f_grade -=1
+
         Question3 = [
-            "exit",
-            "putchar",
             "fclose",
             "fopen",
-            "FILE*",
+            "FILE",
         ]
         for function in Question3:
-            if question == "question3" and function not in file:
-                feedback += f"{'':4}* Function {function}() missing from file\n"
-        if question == "question2" and ("char*" not in file or "char *"):
-            feedback += f"{'':4}* char* missing from file\n"
-        if "return" not in file and "exit" not in file:
-            feedback += f"{'':4}* No exit function found\n"
+            if exec == "Question3" and function not in fileContent:
+                feedback.append(f"Function {function}() missing from file")
+        if exec == "Question3" and "fgetc" in fileContent:
+                feedback.append(f"Function fgetc() found in file")
+        if "return" not in fileContent and "exit" not in fileContent:
+            feedback.append(f"No exit function found")
 
-        if i_feedback !=  None:
-            i_feedback = f"{'':4}* "+ f"\n{'':4}* ".join(i_feedback)
-            return file +feedback + i_feedback
-        else:
-            return file +feedback
+        return feedback
+        
+
         
 
     def m_regrade(self, student: c_Student, proc,filename, points):
+        initalFeedback = student.s_initialFeedback.splitlines()
         exefilename = proc[-1]
-        feedback = self.m_fileToStringList(filename) 
-        i_feedback = self.uI.m_feedbackForm(feedback + ["Feedback:"])
+        fileContent = self.m_fileToStringList(filename)
+        i_feedback = self.m_autoCheck(student,fileContent,exefilename)
+        
+        temp = self.o_uI.m_feedbackForm(fileContent + initalFeedback)
+        if temp != None:i_feedback+=temp 
         instructions = student.s_initialFeedback.splitlines() + [exefilename,
         f"Student : {student.s_name}",
         f"Grade   : {points[1]+points[0]}/{points[1]}", "Select an option:"]
         options = ["Edit File", "Recompile", "Regrade", "Continue"]
         while True:
-            selectedData = self.uI.m_terminalUserInterface(options, instructions)
+            selectedData = self.o_uI.m_terminalUserInterface(options, instructions)
             if (selectedData == options[0]):
                 self.m_editFile(filename)
             elif (selectedData == options[1]):
                 output = self.m_compileCfile(proc)
                 if (output):
-                    print("Compilation Successful")
-                    input()
+                    self.o_uI.m_terminalUserInterface(["Continue"], "Compilation Successful")
                 else:
-                    print(output)
-                    input()
+                    self.o_uI.m_terminalUserInterface(["Continue"], output)
             elif (selectedData == options[2]):
                 method = f"self.m_test{proc[-1]}(student,{points[1]})"
                 exec(method)
             elif (selectedData == options[3]):
                 student.f_grade+=points[0]
-                student.s_initialFeedback += self.m_processFile(feedback,i_feedback,exefilename)
+                student.s_initialFeedback += self.m_processFile(fileContent,i_feedback)
                 student.s_initialFeedback +=f"\n-----------------------------------------------------------------------\n"
                 break
 

@@ -15,14 +15,13 @@ class c_Shell():
             print("Couldn't initalize the script")
             curses.endwin()
             exit(0)
+        assignment: c_AssignmentTrack = c_AssignmentTrack(self.o_uI,self.assignmentToGrade)
+        self.o_grade = assignment.m_initalizer()
         c_DirOrganizer().m_organize()
-        self.o_gradeMain: c_GradeMain = c_GradeMain()
+        self.o_gradeMain: c_GradeMain = c_GradeMain(self.o_grade.dueDate)
         self.mail: c_Mail = c_Mail(self.o_gradeMain)
         self.m_loadProgress()
         self.i_assignmentsToGrade: int = len(self.o_gradeMain.d_listOfStudents)
-        assignment: c_AssignmentTrack = c_AssignmentTrack(self.o_gradeMain,self.o_uI,self.assignmentToGrade)
-        self.o_grade = assignment.m_initalizer()
-        self.o_gradeMain.d_listOfStudents= self.o_gradeMain.m_StudentsDict(self.o_grade.dueDate)
         self.m_menu()
         
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -30,7 +29,7 @@ class c_Shell():
     def m_initalizer(self)->bool:
         # Pre-Req
         self.currentWorkingDir = os.getcwd()
-        os.chdir("../TA-CS265-1")
+        os.chdir(".//TA-CS265-1")
         path = self.o_uI._selectDirectory_()
         # print(f'Changing working directory to {path}')
         if path == "q":
@@ -64,7 +63,8 @@ class c_Shell():
         selectedData = self.o_uI.m_terminalUserInterface(
             options, instructions)
         if (selectedData == options[0]):
-            self.o_grade.m_grade(name)
+            student = self.o_gradeMain.d_listOfStudents[name]
+            self.o_grade.m_grade(student)
             self.o_gradeMain.d_listOfStudentsGraded[name]= self.o_gradeMain.m_getStudent(name).f_grade
             self.m_saveProgress()
             return False

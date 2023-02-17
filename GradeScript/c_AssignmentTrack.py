@@ -9,21 +9,18 @@ PATH = "/home/ss5278/GradeScript"
 
 
 class c_AssignmentTrack():
-    def __init__(self, GradeMain: c_GradeMain,uI: c_termianlUserInterface, assignment):
-        self.uI= uI
-        self.gradeMain: c_GradeMain = GradeMain
-        self.assignmentToGrade: str = assignment
-        self.zipFile: str = ""
-        self.funFact: str = f"\n\nFun Fact: Your assignment is graded and mailed to you using a script.\n{' ':10}It created by all the cool proggramming language, techniques and tools you are learning in this class\n{' ':10}i.e. Bash,C,awk,grep,python,cat"
-        self.foote: str = "\nBest,\nSatwik Shresth\nBSc Computer Science\nCollege of Computing and Informatics\nDrexel University\nPhiladelphia, PA 19104\nsatwik.shresth@drexel.edu\n"
+    def __init__(self,uI: c_termianlUserInterface, assignment):
+        self.o_uI= uI
+        self.s_assignmentToGrade: str = assignment
+
 
     def m_initalizer(self):
-        if self.assignmentToGrade == "Lab5":
+        if self.s_assignmentToGrade == "Lab5":
             from c_GradeLab5 import c_GradeLab5
-            return c_GradeLab5(self.gradeMain,self.uI)
+            return c_GradeLab5(self.o_uI)
         else:
             from c_GradeShell import c_GradeShell
-            return c_GradeShell(self.gradeMain,self.uI,self.assignmentToGrade)
+            return c_GradeShell(self.o_uI,self.s_assignmentToGrade)
 
     def m_finalizeGrade(self, student: c_Student):
         student.s_feedback = student.s_feedback .replace(
@@ -39,18 +36,23 @@ class c_AssignmentTrack():
 
     def m_Decompress(self,student:c_Student,filename):
         if os.path.isfile(filename):
-            self.gradeMain.m_Decompress(filename)
+            student.m_Decompress(filename)
+            return True
         else:
             instructions = [
                 f"Student : {student.s_name}", f"Select a file for {filename}:"]
-            options = [file for file in os.listdir(".")if os.path.isfile(file)]
+            options = [file for file in os.listdir(".")if os.path.isfile(file)] + ["No Need","No Files"]
             while (1):
-                selectedData = self.uI.m_terminalUserInterface(options, instructions)
-                student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-                student.s_initialFeedback += f"Bad file name: {selectedData} found instead of {filename}\n"
-                student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
-                self.gradeMain.m_Decompress(selectedData)
-                break
+                selectedData = self.o_uI.m_terminalUserInterface(options, instructions)
+                if (options[-1] == selectedData):
+                    return False
+                elif (options[-2] == selectedData):
+                    return True
+                else:
+                    student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+                    student.s_initialFeedback += f"Bad file name: {selectedData} found instead of {filename}\n"
+                    student.m_Decompress(selectedData)
+                    return True
 
 
     def m_fileToStringList(self, filename):
@@ -66,7 +68,7 @@ class c_AssignmentTrack():
                 f"Student : {student.s_name}", f"Select a file for {filename}:"]
             options = [file for file in os.listdir(".")if os.path.isfile(file)]
             while (1):
-                selectedData = self.uI.m_terminalUserInterface(
+                selectedData = self.o_uI.m_terminalUserInterface(
                      options, instructions)
                 if (selectedData == "q"):
                     student.s_initialFeedback += f" {-points:<6} {filename} does not exist\n"
@@ -75,7 +77,7 @@ class c_AssignmentTrack():
                     instruction = self.m_fileToStringList(
                         selectedData)+[f"Is {selectedData} Correct?"]
                     option = ["Yes", "No"]
-                    response = self.uI.m_terminalUserInterface(
+                    response = self.o_uI.m_terminalUserInterface(
                         option, instruction)
                     if (response == option[0]):
                         student.s_initialFeedback += f"Bad file name: {selectedData} found instead of {filename}\n"

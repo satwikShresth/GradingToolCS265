@@ -69,11 +69,12 @@ class c_termianlUserInterface():
             elif self.key == ord("q"):
                 return "q"
 
+        self.screen.clear()
+        self.screen.refresh()
         return os.path.join(path, self.dir_content[self.selected_item])
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #Puts instruction on the screen to display and options to choose from
     def m_terminalUserInterface(self, options:list[str], instructions:list[str])->str:
-
         self.m_preReq()
         self.instructions = instructions
         self.dir_content = options
@@ -83,22 +84,34 @@ class c_termianlUserInterface():
             if(self.checkMove()):
                 break
 
+        self.screen.clear()
+        self.screen.refresh()
         return self.dir_content[self.selected_item]
-            
+    
+
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #refreshes the screen with new information evertime its called
     def m_refresh(self)-> None:
         self.win.clear()
+        self.height, self.width = self.screen.getmaxyx()
+        self.win.resize(self.height, self.width)
+        self.win.refresh()
         self.idx = 0
+
+        for i, inputString in enumerate(self.instructions):
+            self.instructions[i] = "".join([char if char in self.readable_characters else "?" for char in inputString])
+
         for instruction in self.instructions:
-            self.win.addstr(self.idx, 0, instruction)
-            self.idx += 1
+            if self.idx < self.height-2:
+                self.win.addstr(self.idx, 0, instruction,self.width)
+                self.idx += 1
         
         for idx2, item in enumerate(self.dir_content):
-            if idx2 == self.selected_item:
-                self.win.addstr(idx2 + self.idx, 0, "-> " + item)
-            else:
-                self.win.addstr(idx2 + self.idx, 0, "   " + item)
+            if idx2 + self.idx < self.height-2:
+                if idx2 == self.selected_item: 
+                    self.win.addstr(idx2 + self.idx, 0, "-> " + item)
+                else:
+                    self.win.addstr(idx2 + self.idx, 0, "   " + item)
 
         # Refresh the screen
         self.win.refresh()
@@ -145,10 +158,10 @@ class c_termianlUserInterface():
                             break
                         else:
                             str = chr(self.key)
-                            if str in self.readable_characters:
+                            if str in self.readable_characters and len(string) < (self.width-5):
                                 if curx-3 == 0:
                                     self.dir_content[self.selected_item] = str+string
-                                elif len(string) < (self.width-3):
+                                else :
                                     self.dir_content[self.selected_item] = string[:curx-3] + str + string[curx-3:]
                                 curx +=1
                 elif self.dir_content[self.selected_item] == self.dir_content[-3]:
@@ -158,6 +171,9 @@ class c_termianlUserInterface():
                     self.selected_item -= 1
                 elif self.dir_content[self.selected_item] == self.dir_content[-1]:
                     break
+
+        self.screen.clear()
+        self.screen.refresh()
 
         return self.dir_content[:-3] if len(self.dir_content) >3 else None 
 

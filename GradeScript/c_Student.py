@@ -1,6 +1,7 @@
 import os
 import re
 from dateutil import parser
+from zipfile import ZipFile
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -17,6 +18,13 @@ class c_Student():
         self.dueDate= duedate
         self.m_CheckSubmissionTime()
         
+
+
+    def m_Decompress(self,filename):
+        if os.path.isfile(filename):
+            with ZipFile(filename, "r") as file:
+                file.extractall(".")
+            os.remove(filename)
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def m_InitFeedback(self) -> str:
