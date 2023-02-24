@@ -27,8 +27,13 @@ class c_AssignmentTrack():
             '?!?', str(student.f_grade) if student.f_grade >= 0 else str(0))
 
     def m_createFeedbackFile(self, filename: str, feedback: str):
-        with open(filename, "w+") as f:
-            f.write(feedback)
+        try:
+            with open(filename, "w+") as f:
+                f.write(feedback)
+        except Exception as e:
+            instructions = [f"Error:", f"{e}"]
+            options = [f"Continue"]
+            self.o_uI.m_terminalUserInterface(options, instructions)
 
     def m_compileTestingExe(self, output, input):
         if (self.m_compileCfile(["gcc", "-ldl", "-o", f"{PATH}/{output}", f"{PATH}/{input}"])):
@@ -39,10 +44,10 @@ class c_AssignmentTrack():
             student.m_Decompress(filename)
             return True
         else:
-            instructions = [
-                f"Student : {student.s_name}", f"Select a file for {filename}:"]
-            options = [file for file in os.listdir(".")if os.path.isfile(file)] + ["No Need","No Files"]
             while (1):
+                instructions = [
+                    f"Student : {student.s_name}", f"Select a file for {filename}:"]
+                options = [file for file in os.listdir(".")if os.path.isfile(file)] + ["No Need","No Files"]
                 selectedData = self.o_uI.m_terminalUserInterface(options, instructions)
                 if (options[-1] == selectedData):
                     return False
@@ -51,13 +56,25 @@ class c_AssignmentTrack():
                 else:
                     student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
                     student.s_initialFeedback += f"Bad file name: {selectedData} found instead of {filename}\n"
-                    student.m_Decompress(selectedData)
-                    return True
+                    try:
+                        student.m_Decompress(selectedData)
+                        return True
+                    except Exception as e:
+                        instructions = [f"Error:", f"{e}"]
+                        options = [f"Continue"]
+                        data = self.o_uI.m_terminalUserInterface(options, instructions)
+                        if data == options[0]:
+                            continue
 
 
     def m_fileToStringList(self, filename):
-        with open(filename, "r") as file:
-            fileContents = [line for line in file.readlines() if line.strip()]
+        try:
+            with open(filename, "r") as file:
+                fileContents = [line for line in file.readlines() if line.strip()]
+        except Exception as e:
+            instructions = [f"Error:", f"{e}"]
+            options = [f"Continue"]
+            self.o_uI.m_terminalUserInterface(options, instructions)
         return fileContents
 
     def _CheckFile_(self, student: c_Student, filename, points):
@@ -87,9 +104,8 @@ class c_AssignmentTrack():
             return False
 
     def m_compileCfile(self, proc):
-        result = subprocess.run(
-            proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if result.returncode != 0:
+        result = subprocess.run(proc, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.returncode == 1:
             return result.stderr.decode()
         else:
             return True

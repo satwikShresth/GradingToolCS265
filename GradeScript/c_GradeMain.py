@@ -13,23 +13,37 @@ class c_GradeMain:
 
     def m_StudentsDict(self,dueDate) -> dict[str,c_Student]:
         dict = {}
+        student = ""
         for name in os.listdir("."):
             if os.path.isdir(os.path.join(".", name)):
-                dict[name] = c_Student(name,duedate=dueDate)
+                with open(os.path.join(".", name,"submit.log"), 'r') as file:
+                    lines = file.readlines()[:2]
+                    for line in lines:
+                        if "Name:" in line:
+                            student = str(line.split("Name: ")[1].strip())
+                dict[name] = c_Student(name,student,duedate=dueDate)
         return dict
 
     def m_getStudent(self, name) -> c_Student:
         return self.d_listOfStudents[name]
 
     def m_tabulateGrades(self) -> str:
-        table = [{'Name': name, 'Grades': grades} for name, grades in self.d_listOfStudentsGraded.items()]
+        table = []
+        self.d_listOfStudentsGraded = dict(sorted(self.d_listOfStudentsGraded.items()))
+        for name, grades in self.d_listOfStudentsGraded.items():
+            table += [{'Name': self.m_getStudent(name).s_fullname, 'Grades': grades} ]
         tabulatedData = tabulate(table, headers='keys')
         self.m_CreateFile(tabulatedData)
         return tabulatedData
         
     def m_CreateFile(self,data):
-        with open(self.s_tabFileName, 'w') as file:
-            file.write(data)
+        try:
+            with open(self.s_tabFileName, 'w') as file:
+                file.write(data)
+        except Exception as e:
+            instructions = [f"Error:", f"{e}"]
+            options = [f"Continue"]
+            self.o_uI.m_terminalUserInterface(options, instructions)
     
 
     def m_DecompressAll(self,filename):

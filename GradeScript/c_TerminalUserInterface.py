@@ -7,10 +7,13 @@ class c_termianlUserInterface():
     def __init__(self) -> None:
         curses.initscr();curses.endwin(); # for some reason this helps in avoiding screen freeze
         self.screen = curses.initscr()
+        self.idy=0
+        curses.mousemask(curses.ALL_MOUSE_EVENTS)
+        curses.mouseinterval(60)
         self.readable_characters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
                         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                        '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '[', ']', '{', '}', '\\', '|', ';', ':', '\'', '\"', ',', '.', '<', '>', '/', '?'," "]
+                        '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '[', ']', '{', '}', '\\', '|', ';', ':', '\'', '\"', ',', '.', '<', '>', '/', '?'," ","\n"]
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # This function creates a list of only dir 
     def _refreshContent_(self)->None:
@@ -19,7 +22,14 @@ class c_termianlUserInterface():
     #checks the keystroke if its pointing up or down
     #return true if enter is pressed
     def checkMove(self)->bool:
-        if self.key == curses.KEY_UP:
+        if self.key == curses.KEY_MOUSE:
+            _,_,_, _, mouse_event = curses.getmouse()
+            if mouse_event == 2097152 and self.idy < self.limit +5:
+                self.idy+=1
+            elif mouse_event == 65536 and self.idy >= 1:
+                self.idy-=1
+            self.win.addstr(self.idx, 0,str(self.idy))
+        elif self.key == curses.KEY_UP:
             if self.selected_item > 0:
                 self.selected_item -= 1
             elif self.selected_item == 0:
@@ -88,6 +98,14 @@ class c_termianlUserInterface():
         self.screen.refresh()
         return self.dir_content[self.selected_item]
     
+    def m_checkUnreadable(self,fileContent):
+        for i in fileContent:
+            if i not in self.readable_characters:
+                return False
+        return True
+
+
+    
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #refreshes the screen with new information evertime its called
@@ -97,21 +115,30 @@ class c_termianlUserInterface():
         self.win.resize(self.height, self.width)
         self.win.refresh()
         self.idx = 0
+        
+        try:
+            for i, inputString in enumerate(self.instructions):
+                self.instructions[i] = "".join([char if char in self.readable_characters else "?" for char in inputString])
+        except:
+            pass
 
-        for i, inputString in enumerate(self.instructions):
-            self.instructions[i] = "".join([char if char in self.readable_characters else "?" for char in inputString])
-
-        for instruction in self.instructions:
-            if self.idx < self.height-2:
+        self.limit = len(self.instructions)
+        for idx,instruction in enumerate(self.instructions):
+            if self.idx < self.height//2 and idx >= self.idy:
                 self.win.addstr(self.idx, 0, instruction,self.width)
                 self.idx += 1
-        
+
         for idx2, item in enumerate(self.dir_content):
-            if idx2 + self.idx < self.height-2:
+            if idx2 + self.idx <= self.height//2:
                 if idx2 == self.selected_item: 
                     self.win.addstr(idx2 + self.idx, 0, "-> " + item)
                 else:
                     self.win.addstr(idx2 + self.idx, 0, "   " + item)
+            else:
+                if idx2 == self.selected_item: 
+                    self.win.addstr(idx2+ (self.height//2 -2), 0, "-> " + item)
+                else:
+                    self.win.addstr(idx2+ (self.height//2-2), 0, "   " + item)
 
         # Refresh the screen
         self.win.refresh()
@@ -119,6 +146,7 @@ class c_termianlUserInterface():
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #initlizes values
     def m_preReq(self)->None:
+        self.idy=0
         curses.cbreak()
         curses.curs_set(0)
         self.screen.keypad(1)

@@ -6,7 +6,8 @@ from zipfile import ZipFile
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class c_Student():
-    def __init__(self, name:str, grader:str="Satwik Shresth", startPoints: float = 100, submitLog:str="submit.log", gradeFile:str="grade.file", duedate:str="Thursday, February 2, 2023 11:59:59 PM EST"):
+    def __init__(self, name:str,fullname:str, grader:str="Satwik Shresth", startPoints: float = 100, submitLog:str="submit.log", gradeFile:str="grade.file", duedate:str="Thursday, February 2, 2023 11:59:59 PM EST"):
+        self.s_fullname: str = fullname
         self.s_name: str = name
         self.s_grader: str = grader
         self.f_grade: float = startPoints
@@ -17,8 +18,6 @@ class c_Student():
         self.s_feedback: str = self.m_InitFeedback()
         self.dueDate= duedate
         self.m_CheckSubmissionTime()
-        
-
 
     def m_Decompress(self,filename):
         if os.path.isfile(filename):

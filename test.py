@@ -5,32 +5,27 @@ stdscr = curses.initscr()
 curses.noecho()
 curses.cbreak()
 stdscr.keypad(True)
+curses.mousemask(curses.ALL_MOUSE_EVENTS)
 
-# Get screen dimensions
-max_y, max_x = stdscr.getmaxyx()
+# Set mouse interval to a low value
+curses.mouseinterval(1)
 
-# Create two windows side by side
-window1 = curses.newwin(max_y//2, max_x, 0, 0)
-window2 = curses.newwin(max_y//2, max_x, max_y//2, 0)
-
-# Add some text to each window
-while(1):
-    window1.addstr(0, 0, "This is window 1")
-    window2.addstr(0, 0, "This is window 2")
-    window1.refresh()
-    window2.refresh()
-
-
-
-# Refresh the windows to show the changes
-window1.refresh()
-window2.refresh()
-
-# Wait for a key press
-stdscr.getch()
+# Wait for a key press or mouse event
+while True:
+    ch = stdscr.getch()
+    if ch == ord('q'):
+        break
+    elif ch == curses.KEY_MOUSE:
+        _, x, y, _, mouse_event = curses.getmouse()
+        stdscr.addstr(0, 0, str(mouse_event))
+        stdscr.refresh()
 
 # Clean up curses
 curses.nocbreak()
 stdscr.keypad(False)
 curses.echo()
 curses.endwin()
+
+
+2097152
+65536

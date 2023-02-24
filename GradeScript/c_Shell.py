@@ -4,7 +4,7 @@ from c_AssignmentTrack import c_AssignmentTrack
 from c_Mail import c_Mail
 from c_TerminalUserInterface import c_termianlUserInterface
 import os
-import json
+import json,sys
 import curses
 
 
@@ -52,8 +52,14 @@ class c_Shell():
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def m_saveProgress(self):
-        with open("students.graded", "w+") as f:
-            json.dump(self.o_gradeMain.d_listOfStudentsGraded, f)
+        try:
+            with open("students.graded", "w+") as f:
+                json.dump(self.o_gradeMain.d_listOfStudentsGraded, f)
+        except Exception as e:
+            instructions = [f"Error:", f"{e}"]
+            options = [f"Continue"]
+            self.o_uI.m_terminalUserInterface(options, instructions)
+            sys.exit(0)
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def m_gradeHelper(self, name):
@@ -102,15 +108,22 @@ class c_Shell():
             if (selectedData == options[0]):
                 self.m_shellStruct()
             elif (selectedData == options[1]):
-                self.o_gradeMain.m_DecompressAll(self.o_grade.zipFile)
+                try:
+                    self.o_gradeMain.m_DecompressAll(self.o_grade.zipFile)
+                except Exception as e:
+                    instructions = [f"Error:", f"{e}"]
+                    options = [f"Continue"]
+                    self.o_uI.m_terminalUserInterface(options, instructions)
             elif (selectedData == options[2]):
+                curses.endwin()
                 self.mail.m_sendMail(
                     list(self.o_gradeMain.d_listOfStudentsGraded))
+                self.o_uI.screen = curses.initscr()
             elif (selectedData == options[3]):
-                instructions = self.o_gradeMain.m_tabulateGrades()
-                instructions = instructions.splitlines()
-                options = ["Mail", "Exit"]
-                selectedData = self.o_uI.m_terminalUserInterface(options, instructions)
+                instructions2 = self.o_gradeMain.m_tabulateGrades()
+                instructions2 = instructions2.splitlines()
+                options2 = ["Mail", "Exit"]
+                selectedData = self.o_uI.m_terminalUserInterface(options2,instructions2)
                 if (selectedData == options[0]):
                     self.mail.m_sendMail(
                     list(self.o_gradeMain.d_listOfStudentsGraded))

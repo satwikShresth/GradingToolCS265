@@ -20,8 +20,14 @@ class c_GradeLab5(c_AssignmentTrack):
             "testSplit", "testSplit.c")
 
     def m_initalizeJson(self, filename):
-        with open(filename, "r") as f:
-            data = json.load(f)
+        try:
+            with open(filename, "r") as f:
+                data = json.load(f)
+        except Exception as e:
+            instructions = [f"Cannot Open file", f"{e}"]
+            options = [f"Continue"]
+            self.o_uI.m_terminalUserInterface(options, instructions)
+            exit(0)
 
         try:
             self.dueDate = data['dueDate']
@@ -96,10 +102,20 @@ class c_GradeLab5(c_AssignmentTrack):
         self.m_finalizeGrade(student)
         self.m_createFeedbackFile(student.s_feedbackFile, student.s_feedback)
         self.m_gradedReport(student)
-        self.m_createFeedbackFile(student.s_feedbackFile, student.s_feedback)
+        self.m_registerGrade(student)
         print(f'Changing working directory back to {currentWorkingDir}')
         os.chdir(currentWorkingDir)
 
+
+    def m_registerGrade(self,student:c_Student):
+        content = self.m_fileToStringList(student.s_feedbackFile)
+        for line in content:
+            if "Grade:" in line:
+                grade = float(line.split("Grade:")[1].strip())
+                student.f_grade = grade
+            if "Name:" in line:
+                student.s_fullname = str(line.split("Name: ")[1].strip())
+        
     def m_testQuestion2(self, student: c_Student, outputFile,pointsPerTest):
         self.m_testQuestion1(student,outputFile,pointsPerTest)
 
@@ -107,7 +123,12 @@ class c_GradeLab5(c_AssignmentTrack):
         pointsDeduct = 0
         pointsPerTest = int(totalPoints/len(self.testStrings["Question1"]))
         for testString in self.testStrings["Question1"]:
-            process = subprocess.getstatusoutput(f"echo {testString} | ./{outputFile}")
+            try:
+                process = subprocess.getstatusoutput(f'printf "{testString}" | ./{outputFile} | iconv -f iso-8859-1 -t utf-8//IGNORE')
+            except Exception as e:
+                student.s_initialFeedback += f" {-totalPoints:<6}Error: {e}\n"
+                student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+                return -(totalPoints)
             if process[0] != 0:
                 student.s_initialFeedback += f" {-totalPoints:<6}Error:{process[1]}\n"
                 student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
@@ -132,7 +153,7 @@ class c_GradeLab5(c_AssignmentTrack):
         testStrings =self.testStrings[outputFile][1]
         testString = "\n".join(self.testStrings[outputFile][1])
         self.m_createFeedbackFile(self.testStrings[outputFile][0],testString)
-        process = subprocess.getstatusoutput(f"./{outputFile}")
+        process = subprocess.getstatusoutput(f"./{outputFile} | iconv -f iso-8859-1 -t utf-8//IGNORE")
         returnCode = process[0]
         returnValue = process[1]
         if returnCode != 0:
@@ -144,8 +165,9 @@ class c_GradeLab5(c_AssignmentTrack):
             for testString in testStrings:
                 if testString in returnValue:
                     found.append(testString)
-            pointsDeduct = len(found)-len(testStrings)
-            if (len(found) != 10 ): student.s_initialFeedback += f"{pointsDeduct} Point\n"
+            if (len(found) != 8 ):
+                pointsDeduct = -8
+                student.s_initialFeedback += f"{pointsDeduct} Point\n"
             student.s_initialFeedback += f"{len(found)} items found out of {len(testStrings)}\n"
             student.s_initialFeedback += f"{'':6}Test String:{testStrings}\n"
             student.s_initialFeedback += f"{'':6}Your output:{found}\n"
@@ -163,12 +185,13 @@ class c_GradeLab5(c_AssignmentTrack):
         if (student.ls_filenames[0] != False):
             output = "Question1"
             proc = ["gcc", student.ls_filenames[0], "-o", output]
-            if (self.m_compileCfile(proc)):
+            result = self.m_compileCfile(proc)
+            if (result == True):
                 pointDeducted = self.m_testQuestion1(student, output,totalPoint)
                 points += pointDeducted
             else:
                 points -= 5
-                student.s_initialFeedback += f" {-5:<6} Compilation Error: {student.ls_filenames[0]}"
+                student.s_initialFeedback += f" {-5:<6} Compilation Error: {result}"
             self.m_regrade(student, proc,proc[-3], [points, totalPoint])
         else:
             student.f_grade -= totalPoint
@@ -180,7 +203,8 @@ class c_GradeLab5(c_AssignmentTrack):
         if (student.ls_filenames[1] != False):
             output = "Question2"
             proc = ["gcc", student.ls_filenames[1], "-o", output]
-            if (self.m_compileCfile(proc)):
+            result = self.m_compileCfile(proc)
+            if (result == True):
                 instructions = self.m_fileToStringList(
                     student.ls_filenames[1])+[f"Did {student.s_name} use pointers to solve the question?"]
                 options = ["Yes", "No"]
@@ -195,7 +219,7 @@ class c_GradeLab5(c_AssignmentTrack):
                     return
             else:
                 points -= 5
-                student.s_initialFeedback += f" {-5:<6} Compilation Error: {student.ls_filenames[0]}"
+                student.s_initialFeedback += f" {-5:<6} Compilation Error: {result}"
             self.m_regrade(student, proc, proc[-3],[points, totalPoint])
         else:
             student.f_grade -= totalPoint
@@ -226,11 +250,18 @@ class c_GradeLab5(c_AssignmentTrack):
         
     def m_autoCheck(self,student: c_Student,fileContentList,exec):
         fileContent = f"\n".join([i for i in fileContentList if i != ""])
+        output=""
         if exec == "Question3":
-            _, output = subprocess.getstatusoutput(f"valgrind --leak-check=full --show-leak-kinds=all ./{exec}")
+            try:
+                _, output = subprocess.getstatusoutput(f"valgrind --leak-check=full --show-leak-kinds=all ./{exec} | iconv -f iso-8859-1 -t utf-8//IGNORE")
+            except Exception as e:
+                student.s_initialFeedback += f"Error while checking memory leak: {e}\n"
         else:
             testString = self.testStrings["Question1"]
-            _, output = subprocess.getstatusoutput(f"echo {testString} |valgrind --leak-check=full --show-leak-kinds=all ./{exec}")
+            try:
+                _, output = subprocess.getstatusoutput(f"printf {testString} |valgrind --leak-check=full --show-leak-kinds=all ./{exec}| iconv -f iso-8859-1 -t utf-8//IGNORE")
+            except Exception as e:
+                student.s_initialFeedback += f"Error while checking memory leak: {e}\n"
         feedback = ["Feedback:"]
         if "All heap blocks were freed -- no leaks are possible" not in output:
             feedback.append(f"-1 Point: Memory leaks detected!")
@@ -246,6 +277,8 @@ class c_GradeLab5(c_AssignmentTrack):
                 feedback.append(f"Function {function}() missing from file")
         if exec == "Question3" and "fgetc" in fileContent:
                 feedback.append(f"Function fgetc() found in file")
+        if self.o_uI.m_checkUnreadable(fileContent) == False:
+            feedback.append(f"Null character found in file")
         if "return" not in fileContent and "exit" not in fileContent:
             feedback.append(f"No exit function found")
 
@@ -259,8 +292,7 @@ class c_GradeLab5(c_AssignmentTrack):
         exefilename = proc[-1]
         fileContent = self.m_fileToStringList(filename)
         i_feedback = self.m_autoCheck(student,fileContent,exefilename)
-        
-        temp = self.o_uI.m_feedbackForm(fileContent + initalFeedback)
+        temp = self.o_uI.m_feedbackForm(fileContent + initalFeedback+i_feedback)
         if temp != None:i_feedback+=temp 
         instructions = student.s_initialFeedback.splitlines() + [exefilename,
         f"Student : {student.s_name}",
@@ -277,7 +309,7 @@ class c_GradeLab5(c_AssignmentTrack):
                 else:
                     self.o_uI.m_terminalUserInterface(["Continue"], output)
             elif (selectedData == options[2]):
-                method = f"self.m_test{proc[-1]}(student,{points[1]})"
+                method = f"self.m_test{proc[-1]}(student,{proc[-1]},{points[1]})"
                 exec(method)
             elif (selectedData == options[3]):
                 student.f_grade+=points[0]
