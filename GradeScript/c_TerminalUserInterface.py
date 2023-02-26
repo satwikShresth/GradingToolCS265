@@ -53,7 +53,7 @@ class c_termianlUserInterface():
         path = os.getcwd()
         self.dir_content = os.listdir(path)
         self._refreshContent_()
-        self.instructions = ["Select the directory of the assignment:"]
+        self.instructions = ["<-,-> arrow keys to move in and out of the dir","enter to select"]+["Select the directory of the assignment:"]
         self.dirHistory={}
         while True:
             self.m_refresh()
