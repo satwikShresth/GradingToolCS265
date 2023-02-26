@@ -29,7 +29,7 @@ class c_Shell():
     def m_initalizer(self)->bool:
         # Pre-Req
         self.currentWorkingDir = os.getcwd()
-        os.chdir(".//TA-CS265-1")
+#         os.chdir(".//TA-CS265-1")
         path = self.o_uI._selectDirectory_()
         # print(f'Changing working directory to {path}')
         if path == "q":
