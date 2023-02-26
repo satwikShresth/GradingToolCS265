@@ -1,8 +1,7 @@
 # GradingToolCS265
-Created spefic for Certain Assignment
-Can make a few changes and make it generic
-to use
-copy the file to your dir
+Created for the course CS265
 # Use
-./grade \<dir of all the files you downloaded from bblearn\>
-
+Needs:
+- A dir for to store all the labs and assignment with each lab files in this format "Lab5"
+- set a cmdline parameter  using "export PATH=$PATH:/home/ss5278/GradeScript/"
+- Need a Json file
