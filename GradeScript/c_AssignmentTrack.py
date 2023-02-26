@@ -12,12 +12,14 @@ class c_AssignmentTrack():
     def __init__(self,uI: c_termianlUserInterface, assignment):
         self.o_uI= uI
         self.s_assignmentToGrade: str = assignment
-
-
+        
     def m_initalizer(self):
         if self.s_assignmentToGrade == "Lab5":
             from c_GradeLab5 import c_GradeLab5
             return c_GradeLab5(self.o_uI)
+        elif self.s_assignmentToGrade == "Lab6":
+            from c_GradeLab6 import c_GradeLab6
+            return c_GradeLab6(self.o_uI)
         else:
             from c_GradeShell import c_GradeShell
             return c_GradeShell(self.o_uI,self.s_assignmentToGrade)

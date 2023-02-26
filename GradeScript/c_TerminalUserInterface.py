@@ -18,6 +18,10 @@ class c_termianlUserInterface():
     # This function creates a list of only dir 
     def _refreshContent_(self)->None:
         self.dir_content = [dir for dir in self.dir_content if os.path.isdir(dir)]
+
+    def m_end(self):
+        curses.endwin()
+        
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #checks the keystroke if its pointing up or down
     #return true if enter is pressed

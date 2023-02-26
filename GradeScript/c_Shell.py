@@ -9,8 +9,8 @@ import curses
 
 
 class c_Shell():
-    def __init__(self):
-        self.o_uI:c_termianlUserInterface = c_termianlUserInterface()
+    def __init__(self,uI:c_termianlUserInterface):
+        self.o_uI:c_termianlUserInterface = uI
         if (self.m_initalizer() == False):
             print("Couldn't initalize the script")
             curses.endwin()
