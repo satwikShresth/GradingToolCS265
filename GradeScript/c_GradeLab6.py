@@ -152,17 +152,11 @@ class c_GradeLab6(c_AssignmentTrack):
     def m_autoCheck(self,student: c_Student,fileContentList,exec):
         fileContent = f"\n".join([i for i in fileContentList if i != ""])
         output=""
-        if exec == "Question3":
-            try:
-                _, output = subprocess.getstatusoutput(f"valgrind --leak-check=full --show-leak-kinds=all ./{exec} | iconv -f iso-8859-1 -t utf-8//IGNORE")
-            except Exception as e:
-                student.s_initialFeedback += f"Error while checking memory leak: {e}\n"
-        else:
-            testString = self.testStrings["Question1"]
-            try:
-                _, output = subprocess.getstatusoutput(f"printf {testString} |valgrind --leak-check=full --show-leak-kinds=all ./{exec}| iconv -f iso-8859-1 -t utf-8//IGNORE")
-            except Exception as e:
-                student.s_initialFeedback += f"Error while checking memory leak: {e}\n"
+        testString = '\n'.join(self.testStrings["Question1"][0])+"\n"+"\n"
+        try:
+            _, output = subprocess.getstatusoutput(f"printf {testString} |valgrind --leak-check=full --show-leak-kinds=all ./{exec}| iconv -f iso-8859-1 -t utf-8//IGNORE")
+        except Exception as e:
+            student.s_initialFeedback += f"Error while checking memory leak: {e}\n"
         feedback = ["Feedback:"]
         if "All heap blocks were freed -- no leaks are possible" not in output:
             feedback.append(f"-1 Point: Memory leaks detected!")
