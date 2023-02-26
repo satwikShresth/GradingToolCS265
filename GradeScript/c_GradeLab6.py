@@ -152,7 +152,7 @@ class c_GradeLab6(c_AssignmentTrack):
     def m_autoCheck(self,student: c_Student,fileContentList,exec):
         fileContent = f"\n".join([i for i in fileContentList if i != ""])
         output=""
-        testString = '\n'.join(self.testStrings["Question1"][0])+"\n"+"\n"
+        testString = '\n'.join(self.testStrings["Question1"][0][0])+"\n"+"\n"
         try:
             _, output = subprocess.getstatusoutput(f"printf {testString} |valgrind --leak-check=full --show-leak-kinds=all ./{exec}| iconv -f iso-8859-1 -t utf-8//IGNORE")
         except Exception as e:
