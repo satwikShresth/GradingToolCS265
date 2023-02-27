@@ -19,9 +19,73 @@ class c_termianlUserInterface():
     def _refreshContent_(self)->None:
         self.dir_content = [dir for dir in self.dir_content if os.path.isdir(dir)]
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     def m_end(self):
         curses.endwin()
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    def m_selectStudents(self,listOfStudents,gradedStudent)->bool:
+        self.m_preReq()
+        sep1 = "-"*39
+        sep2= "-"*8
+        self.instructions=[f"Name{'':35} {'':3}Grade",f"{sep1} {sep2}"]
+        self.content = []
+        for name,student in listOfStudents.items():
+            if name in gradedStudent:
+                self.content += [f'{student.s_fullname:<39} {student.f_grade:<8}']
+            else:
+                self.content += [f'{student.s_fullname:<39} {"Pending":<8}']
+        while True:
+            self.dir_content = ["Search"] + self.content
+            curses.curs_set(0)
+            self.m_mrefresh()
+
+            if(self.checkMove()):
+                if self.dir_content[self.selected_item] == self.dir_content[0]:
+                    self.dir_content[self.selected_item] = ""
+                    curx=3
+                    curses.curs_set(1)
+                    while (1): 
+                        self.screen.move(self.idx+self.selected_item,curx)
+                        self.m_mrefresh()
+                        string = self.dir_content[self.selected_item]
+                        if self.key == curses.KEY_LEFT:
+                            if curx >3:
+                                curx -=1
+                        elif self.key == curses.KEY_RIGHT: 
+                            if curx < len(string)+3:
+                                curx +=1
+                        elif self.key == curses.KEY_BACKSPACE or self.key == 127: 
+                            if curx >3 and len(string) >= curx-3:
+                                curx -=1
+                                self.dir_content[self.selected_item] = string[:curx-3] + string[curx-3+1:]
+                        elif self.key == ord("\n"):
+                            break
+                        else:
+                            str = chr(self.key)
+                            if str in self.readable_characters and len(string) < (self.width-5):
+                                if curx-3 == 0:
+                                    self.dir_content[self.selected_item] = str+string
+                                else :
+                                    self.dir_content[self.selected_item] = string[:curx-3] + str + string[curx-3:]
+                                curx +=1
+                        del self.dir_content[1::]
+                        for name,student in listOfStudents.items():
+                            if self.dir_content[self.selected_item] in student.s_fullname:
+                                if name in gradedStudent:
+                                    self.content += [f'{student.s_fullname:<39} {student.f_grade:<8}']
+                                else:
+                                    self.content += [f'{student.s_fullname:<39} {"Pending":<8}']
+                else:
+                    break
+
+        self.screen.clear()
+        self.screen.refresh()
+        curses.endwin()
         
+        return list(listOfStudents.keys())[self.selected_item-1]
+
+
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #checks the keystroke if its pointing up or down
     #return true if enter is pressed
@@ -133,7 +197,7 @@ class c_termianlUserInterface():
                 self.idx += 1
 
         for idx2, item in enumerate(self.dir_content):
-            if idx2 + self.idx <= self.height//2:
+            if idx2 + self.idx-2 <= self.height//2:
                 if idx2 == self.selected_item: 
                     self.win.addstr(idx2 + self.idx, 0, "-> " + item)
                 else:
@@ -143,6 +207,31 @@ class c_termianlUserInterface():
                     self.win.addstr(idx2+ (self.height//2 -2), 0, "-> " + item)
                 else:
                     self.win.addstr(idx2+ (self.height//2-2), 0, "   " + item)
+
+        # Refresh the screen
+        self.win.refresh()
+        self.key = self.screen.getch()
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #refreshes the screen with new information evertime its called
+    def m_mrefresh(self)-> None:
+        self.win.clear()
+        self.height, self.width = self.screen.getmaxyx()
+        self.win.resize(self.height, self.width)
+        self.win.refresh()
+        self.idx = 0
+
+        self.limit = len(self.instructions) + len(self.dir_content)
+        for instruction in self.instructions:
+            self.win.addstr(self.idx, 0, instruction,self.width)
+            self.idx += 1
+
+        for idx2, item in enumerate(self.dir_content):
+            if idx2 + self.idx < self.height:
+                if idx2 == self.selected_item: 
+                    self.win.addstr(idx2 + self.idx, 0, "-> " + item)
+                else:
+                    self.win.addstr(idx2 + self.idx, 0, "   " + item)
 
         # Refresh the screen
         self.win.refresh()

@@ -12,7 +12,7 @@ class c_GradeMain:
         self.s_tabFileName = "grades.tab"
 
     def m_StudentsDict(self,dueDate) -> dict[str,c_Student]:
-        dict = {}
+        dic = {}
         student = ""
         for name in os.listdir("."):
             if os.path.isdir(os.path.join(".", name)):
@@ -21,8 +21,8 @@ class c_GradeMain:
                     for line in lines:
                         if "Name:" in line:
                             student = str(line.split("Name: ")[1].strip())
-                dict[name] = c_Student(name,student,duedate=dueDate)
-        return dict
+                dic[name] = c_Student(name,student,duedate=dueDate)
+        return dict(sorted(dic.items()))
 
     def m_getStudent(self, name) -> c_Student:
         return self.d_listOfStudents[name]

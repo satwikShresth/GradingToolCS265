@@ -79,6 +79,7 @@ class c_Shell():
         elif (selectedData == options[2]):
             print(f"Back to Menu")
             return True
+
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def m_shellFreshGrade(self):
@@ -100,25 +101,27 @@ class c_Shell():
         instructions = [f"Total assignments : {self.i_assignmentsToGrade}",
                         f"Number of assignments graded: {len(self.o_gradeMain.d_listOfStudentsGraded)}",
                         "Select an option:"]
-        options = ["Start Grading","Decompress All Files","Mail Grades", "Tabulate Grades", "EXIT"]
+        options = ["Start Grading","Students","Decompress All Files","Mail Grades", "Tabulate Grades", "EXIT"]
         while True:
             selectedData = self.o_uI.m_terminalUserInterface(
                 options, instructions)
             if (selectedData == options[0]):
                 self.m_shellStruct()
             elif (selectedData == options[1]):
+                self.o_uI.m_selectStudents(self.o_gradeMain.d_listOfStudents,self.o_gradeMain.d_listOfStudentsGraded)
+            elif (selectedData == options[2]):
                 try:
                     self.o_gradeMain.m_DecompressAll(self.o_grade.zipFile)
                 except Exception as e:
                     instructions = [f"Error:", f"{e}"]
                     options = [f"Continue"]
                     self.o_uI.m_terminalUserInterface(options, instructions)
-            elif (selectedData == options[2]):
+            elif (selectedData == options[3]):
                 curses.endwin()
                 self.mail.m_sendMail(
                     list(self.o_gradeMain.d_listOfStudentsGraded))
                 self.o_uI.screen = curses.initscr()
-            elif (selectedData == options[3]):
+            elif (selectedData == options[4]):
                 instructions2 = self.o_gradeMain.m_tabulateGrades()
                 instructions2 = instructions2.splitlines()
                 options2 = ["Mail", "Exit"]
@@ -126,7 +129,7 @@ class c_Shell():
                 if (selectedData == options[0]):
                     self.mail.m_sendMail(
                     list(self.o_gradeMain.d_listOfStudentsGraded))
-            elif (selectedData == options[4]):
+            elif (selectedData == options[5]):
                 # Post-Req
                 # print(f'Changing working directory back to {currentWorkingDir}')
                 

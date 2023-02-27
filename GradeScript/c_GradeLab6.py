@@ -101,7 +101,7 @@ class c_GradeLab6(c_AssignmentTrack):
 
     def m_testQuestion1(self, student: c_Student, outputFile,totalPoints):
         pointsDeduct = 0
-        pointsPerTest = int(totalPoints/len(self.testStrings["Question1"]))
+        pointsPerTest = totalPoints
         for testString in self.testStrings["Question1"]:
             test = '\n'.join(testString[0])+"\n"+"\n"
             ans = testString[1]
@@ -117,7 +117,7 @@ class c_GradeLab6(c_AssignmentTrack):
                 return -(totalPoints)
             output = process[1]
             if (ans not in output):
-                pointsDeduct -= (totalPoints/len(self.testStrings["Question1"]))
+                pointsDeduct -= pointsPerTest
                 student.s_initialFeedback += f" {-pointsPerTest:<6}Failed Test String      -> {testString[0]}\n"
                 student.s_initialFeedback += f" {'':6}your ouput              -> {output}\n"
                 student.s_initialFeedback += f" {'':6}desired output          -> {ans}\n"

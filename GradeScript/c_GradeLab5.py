@@ -14,10 +14,6 @@ class c_GradeLab5(c_AssignmentTrack):
     def __init__(self,uI: c_termianlUserInterface, jsonFilename="Lab5.json"):
         self.o_uI = uI
         self.m_initalizeJson(jsonFilename)
-        self.f_gradeQuickSortExe = self.m_compileTestingExe(
-            "testQuickSort", "testQuickSort.c")
-        self.f_gradeSplitExe = self.m_compileTestingExe(
-            "testSplit", "testSplit.c")
 
     def m_initalizeJson(self, filename):
         try:
