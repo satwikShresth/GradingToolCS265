@@ -1,31 +1,59 @@
-import os
+import os,pickle,threading,time
+from c_TerminalUserInterface import c_termianlUserInterface
 from c_Student import c_Student
 from tabulate import tabulate
 
+PROFILE = "/home/ss5278/GradeScript/studentProfiles"
 
 class c_GradeMain:
-    def __init__(self,dueDate,Grade=100, grader="Satwik Shresth"):
+    def __init__(self,uI:c_termianlUserInterface,assignmentName,Grade=100, grader="Satwik Shresth"):
+        self.o_uI = uI
+        self.assignmentName = assignmentName
         self.f_grade: float = Grade
         self.s_grader: str = grader
-        self.d_listOfStudents: dict = self.m_StudentsDict(dueDate)
+        self.d_listOfStudents:dict
+        self.m_StudentsDict()
         self.d_listOfStudentsGraded: dict = dict()
         self.s_tabFileName = "grades.tab"
 
-    def m_StudentsDict(self,dueDate) -> dict[str,c_Student]:
-        dic = {}
-        student = ""
+    def m_StudentsDict(self):
+        self.d_listOfStudents = {}
         for name in os.listdir("."):
             if os.path.isdir(os.path.join(".", name)):
-                with open(os.path.join(".", name,"submit.log"), 'r') as file:
-                    lines = file.readlines()[:2]
-                    for line in lines:
-                        if "Name:" in line:
-                            student = str(line.split("Name: ")[1].strip())
-                dic[name] = c_Student(name,student,duedate=dueDate)
-        return dict(sorted(dic.items()))
+                self.m_loadProfile(name)
+        self.d_listOfStudents = dict(sorted(self.d_listOfStudents.items()))
 
     def m_getStudent(self, name) -> c_Student:
         return self.d_listOfStudents[name]
+
+
+
+    def m_saveProfile(self,name):
+        try:
+            with open(os.path.join(PROFILE,f"{name}.profile"), "wb+") as f:
+                pickle.dump(self.d_listOfStudents[name],f)
+        except Exception as e:
+            instructions = [f"Error:", f"{e}"]
+            options = [f"Continue"]
+            self.o_uI.m_terminalUserInterface(options, instructions)
+            
+
+    def m_loadProfile(self,name):
+        try:
+            with open(os.path.join(PROFILE,f"{name}.profile"), "rb") as f:
+                self.d_listOfStudents[name] = pickle.load(f)
+            self.d_listOfStudents[name].m_loadProfile(self.assignmentName)
+
+        except Exception as e:
+            instructions = [f"Error:", f"{name}.profile not found in database","Creating new profile !! "]
+            options = [f"Continue"]
+            self.o_uI.m_terminalUserInterface(options, instructions)
+            self.d_listOfStudents[name] = c_Student(name)
+            with open(os.path.join(PROFILE,f"{name}.profile"), "wb+") as f:
+                pickle.dump(self.d_listOfStudents[name],f)
+            
+
+        
 
     def m_tabulateGrades(self) -> str:
         table = []
@@ -35,6 +63,7 @@ class c_GradeMain:
         tabulatedData = tabulate(table, headers='keys')
         self.m_CreateFile(tabulatedData)
         return tabulatedData
+    
         
     def m_CreateFile(self,data):
         try:
@@ -44,13 +73,3 @@ class c_GradeMain:
             instructions = [f"Error:", f"{e}"]
             options = [f"Continue"]
             self.o_uI.m_terminalUserInterface(options, instructions)
-    
-
-    def m_DecompressAll(self,filename):
-        for name,student in self.d_listOfStudents.values():
-            currentWorkingDir = os.getcwd()
-            os.chdir(os.path.join(currentWorkingDir,name))
-            student.m_Decompress(filename)
-            os.chdir(currentWorkingDir)
-
-            

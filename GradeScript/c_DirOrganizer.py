@@ -1,9 +1,28 @@
 import os
-
+from zipfile import ZipFile
 
 class c_DirOrganizer:
     def __init__(self):
-        pass
+        lst = os.listdir(".")
+        for files in lst:
+            name, ext = os.path.splitext(files)
+            if os.path.isfile(files) and "gradebook" in name and "zip" in ext:
+                with ZipFile(files, "r") as file:
+                    file.extractall(".")
+                os.remove(files)
+        lst = os.listdir(".")
+        for files in lst:
+            if os.path.isdir(files) and "gradebook" in files:
+                target_dir = os.getcwd()
+                files = os.listdir(files)
+                for file in files:
+                    source_path = os.path.join(files, file)
+                    target_path = os.path.join(target_dir, file)
+                    os.rename(source_path, target_path)
+                os.remove(files)
+        self.m_ReadDirectory()    
+
+
 
     def m_SplitAndStore(self, inputString, delimiter):
         splitList = inputString.split(delimiter)
@@ -32,6 +51,3 @@ class c_DirOrganizer:
         for filename in os.listdir("."):
             if os.path.isfile(filename):
                 self.m_SplitAndStore(filename, "_")
-
-    def m_organize(self):
-        self.m_ReadDirectory()
