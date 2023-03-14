@@ -61,7 +61,7 @@ class c_GradeCommon(c_AssignmentTrack):
                 shutil.copy(os.path.join(currentWorkingDir,files),os.path.join(path,files))
 
         for key,values in self.d_questions.items():
-            if self.m_Decompress(student,self.zipFile):
+            if self.m_Decompress(student,self.zipFile) and self.zipFile.lower() != "none":
                 self.m_gradeHelper(student,key,values)
             else:
                 student.s_feedback += f"-----------------------------------------------------------------------\n"
@@ -105,10 +105,11 @@ class c_GradeCommon(c_AssignmentTrack):
                 self.m_testOutput(expected)
                 if(len(self.answerCheck) >= 1):
                     pointsDeduct -= pointDivided*len(self.answerCheck)
+                    output = f" {'':23}-> ".join(self.output.split("\n"))
                     student.s_initialFeedback += f" {pointsDeduct:<6} Failed Test     -> {input}\n"
                     student.s_initialFeedback += f" {'':6} Input type      -> {inputType}\n"
-                    student.s_initialFeedback += f" {'':6} Desired output      -> {expected}\n"
-                    student.s_initialFeedback += f" {'':6} Your ouput      -> {self.output}\n"
+                    student.s_initialFeedback += f" {'':6} Desired output  -> {expected}\n"
+                    student.s_initialFeedback += f" {'':6} Your ouput      -> {output}\n"
                     student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
             self.output = ""
         if (pointsDeduct == 0):
@@ -130,6 +131,15 @@ class c_GradeCommon(c_AssignmentTrack):
         return True
     
 #--------------------------------------------------------------------------------------------------------------------------------------
+    def m_divideQuestions(self,fileContent,count,answers):
+        for idx,line in enumerate(fileContent):
+            if re.match(r".*q.*\d.*", line.lower()) and idx != 0: 
+                return self.m_divideQuestions(fileContent[idx:],count+1,answers)
+            elif idx == 0:
+                answers[count] = [line]
+            else:
+                answers[count].append(line)
+        return answers
     
     def m_checkQuestionInBash(self, student: c_Student,execFile,question):
         points = 0
@@ -145,25 +155,14 @@ class c_GradeCommon(c_AssignmentTrack):
                 actualFilename = self._CheckFile_(student,student.ls_filenames[file])
             else:
                 actualFilename = self._CheckFile_(student,file)
-                
             studentCurrentFilenames.append(actualFilename)
             student.ls_filenames[file] = actualFilename
 
         if  False not in studentCurrentFilenames:
-            proc = ["gcc"]
-            proc += studentCurrentFilenames
-            proc +=["-o", execFile]
-            result = self.m_compileCfile(proc)
-            if (result == True):
-                pointDeducted = self.m_testQuestion(student,execFile,testString)
-                points += pointDeducted
-            else:
-                points -= 10
-                self.compilationError = True
-                student.s_initialFeedback += f" {-5:<6} Compilation Error: {result}"
             fileContent = self.m_filesToStringList(studentCurrentFilenames)
-            feedback = self.m_autoCheck(student,execFile,testString[0],fileContent)
-            self.m_regrade(student,studentCurrentFilenames,proc,fileContent,feedback,testString,[int(points), int(totalPoints)])
+            answers ={}
+            answers = self.m_divideQuestions(fileContent,0,answers)
+
             testString = None
         else:
             student.s_initialFeedback += f" {-totalPoints:<6} Required File Missing"

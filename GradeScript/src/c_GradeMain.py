@@ -11,7 +11,7 @@ class c_GradeMain:
         self.assignmentName = assignmentName
         self.f_grade: float = Grade
         self.s_grader: str = grader
-        self.d_listOfStudents:dict
+        self.d_listOfStudents:dict[str:c_Student]
         self.m_StudentsDict()
         self.d_listOfStudentsGraded: dict = dict()
         self.s_tabFileName = "grades.tab"
@@ -19,7 +19,7 @@ class c_GradeMain:
     def m_StudentsDict(self):
         self.d_listOfStudents = {}
         for name in os.listdir("."):
-            if os.path.isdir(os.path.join(".", name)):
+            if os.path.isdir(os.path.join(".", name)) and name != "references":
                 self.m_loadProfile(name)
         self.d_listOfStudents = dict(sorted(self.d_listOfStudents.items()))
 
@@ -45,15 +45,37 @@ class c_GradeMain:
             self.d_listOfStudents[name].m_loadProfile(self.assignmentName)
 
         except Exception as e:
-            instructions = [f"Error:", f"{name}.profile not found in database","Creating new profile !! "]
-            options = [f"Continue"]
-            self.o_uI.m_terminalUserInterface(options, instructions)
-            self.d_listOfStudents[name] = c_Student(name)
-            with open(os.path.join(PROFILE,f"{name}.profile"), "wb+") as f:
-                pickle.dump(self.d_listOfStudents[name],f)
+            instructions = [f"Error:", f"{name}.profile not found in database","Create new profile ?"]
+            options = [f"Continue","Skip"]
+            response = self.o_uI.m_terminalUserInterface(options, instructions)
+            if response == options[0]:
+                self.d_listOfStudents[name] = c_Student(name)
+                with open(os.path.join(PROFILE,f"{name}.profile"), "wb+") as f:
+                    pickle.dump(self.d_listOfStudents[name],f)
             
+    
+    def m_createBBFeedbackFile(self):
+        keywords = ["Grader:","Part-","Grade:","All test strings passed","Bad file name: ","Feedback:\n"," -> ","Late Submission:","Question","* "]
+        bbFeedbackFile = ""
+        for name, _ in self.d_listOfStudentsGraded.items():
+            bbFeedbackFile += f"--------------------------------{name}---------------------------------------\n"
+            with open(os.path.join(".", name,self.m_getStudent(name).s_feedbackFile),"r") as file:
+                lines = file.readlines()
+            for line in lines:
+                for words in keywords:
+                    if words in line:
+                        if words == "Question" or words == "Part-":
+                            bbFeedbackFile += "-----------------------------------\n"
+                            bbFeedbackFile += line
+                            bbFeedbackFile += "-----------------------------------\n"
+                        else:
+                            bbFeedbackFile += line
+            bbFeedbackFile += f"----------------------------------------------------------------------"+("-"*len(name))+"\n"
 
-        
+        with open("bbLearnFeedback.txt","w+") as file:
+            file.write(bbFeedbackFile)
+
+
 
     def m_tabulateGrades(self) -> str:
         table = []

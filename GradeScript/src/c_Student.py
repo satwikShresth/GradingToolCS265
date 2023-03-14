@@ -1,5 +1,5 @@
 import os
-import re,subprocess
+import subprocess
 from dateutil import parser
 from zipfile import ZipFile
 PATH = "/home/ss5278/GradeScript"
@@ -16,7 +16,7 @@ class c_Student():
         self.m_initalizeCurrentGrader()
         self.m_initlaizeStudent()
         self.s_initialFeedback: str = ""
-        self.ls_filenames = {}
+        self.ls_filenames:dict = {}
         self.s_feedback: str = self.m_InitFeedback()
         self.parsedAnswers:dict
 
@@ -37,7 +37,8 @@ class c_Student():
         
         self.submissions[self.assignment] = submission
         self.m_initalizeCurrentGrader()
-        self.m_InitFeedback()
+        self.s_feedback = self.m_InitFeedback()
+        self.s_initialFeedback: str = ""
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

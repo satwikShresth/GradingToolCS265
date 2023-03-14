@@ -4,7 +4,6 @@ from c_AssignmentTrack import c_AssignmentTrack
 from c_Mail import c_Mail
 from c_Student import c_Student
 from c_TerminalUserInterface import c_termianlUserInterface
-# from c_CodeChecker import c_CodeChecker
 from tabulate import tabulate
 import os
 import json,sys
@@ -22,7 +21,6 @@ class c_Shell():
         self.o_grade = assignment.m_initalizer()
         c_DirOrganizer()
         self.o_gradeMain: c_GradeMain = c_GradeMain(self.o_uI,self.assignmentName)
-        # self.codeChecker = c_CodeChecker(self.o_gradeMain)
         self.mail: c_Mail = c_Mail(self.o_gradeMain)
         self.m_loadProgress()
         self.i_assignmentsToGrade: int = len(self.o_gradeMain.d_listOfStudents)
@@ -216,7 +214,7 @@ class c_Shell():
         instructions = [f"Total assignments : {self.i_assignmentsToGrade}",
                         f"Number of assignments graded: {len(self.o_gradeMain.d_listOfStudentsGraded)}",
                         "Select an option:"]
-        options = ["Start Grading","Students","Mail Grades", "Tabulate Grades","Tabulate Runtime Record", "EXIT"]
+        options = ["Start Grading","Students","Mail Grades", "Tabulate Grades","Generate Report", "EXIT"]
         while True:
             selectedData = self.o_uI.m_terminalUserInterface(
                 options, instructions)
@@ -231,17 +229,23 @@ class c_Shell():
                     list(self.o_gradeMain.d_listOfStudentsGraded))
                 self.o_uI.screen = curses.initscr()
             elif (selectedData == options[3]):
+                self.o_gradeMain.m_createBBFeedbackFile()
                 instructions2 = self.o_gradeMain.m_tabulateGrades()
-                instructions2 = instructions2.splitlines()
-                options2 = ["Mail", "Exit"]
-                selectedData = self.o_uI.m_terminalUserInterface(options2,instructions2)
-                if (selectedData == options[0]):
-                    self.mail.m_sendMail(
-                    list(self.o_gradeMain.d_listOfStudentsGraded))
+                instructions2 = instructions2.splitlines() + ["Tabulated grades saved in file: grades.tab"]
+                options2 = ["Continue"]
+                self.o_uI.m_terminalUserInterface(options2,instructions2)
             elif (selectedData == options[4]):
-                pass
-                # self.codeChecker.m_generateReport()
-                # self.codeChecker.customCheck()
+                from c_CodeChecker import c_CodeChecker
+                self.codeChecker = c_CodeChecker(self.o_gradeMain)
+                ins = ["Which Plagerism Dedection Software do you want to use ?"]
+                selectionOfService = ["Moss","CopyDedect","Both"]
+                select = self.o_uI.m_terminalUserInterface(selectionOfService,ins)
+                if select == selectionOfService[0]:
+                    self.codeChecker.m_generateMossReport()
+                elif select == selectionOfService[1]:
+                    self.codeChecker.m_generateCCReport()
+                elif select == selectionOfService[2]:
+                    self.codeChecker.m_generateCCReport()
             elif (selectedData == options[5]):
                 # Post-Req
                 # print(f'Changing working directory back to {currentWorkingDir}')
