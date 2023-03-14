@@ -1,4 +1,4 @@
-from c_GradeMain import c_GradeMain
+from c_GradeBook import c_GradeBook
 from c_DirOrganizer import c_DirOrganizer
 from c_AssignmentTrack import c_AssignmentTrack
 from c_Mail import c_Mail
@@ -20,7 +20,7 @@ class c_Shell():
         assignment: c_AssignmentTrack = c_AssignmentTrack(self.o_uI,self.assignmentToGrade,self.data)
         self.o_grade = assignment.m_initalizer()
         c_DirOrganizer()
-        self.o_gradeMain: c_GradeMain = c_GradeMain(self.o_uI,self.assignmentName)
+        self.o_gradeMain: c_GradeBook = c_GradeBook(self.o_uI,self.assignmentName)
         self.mail: c_Mail = c_Mail(self.o_gradeMain)
         self.m_loadProgress()
         self.i_assignmentsToGrade: int = len(self.o_gradeMain.d_listOfStudents)

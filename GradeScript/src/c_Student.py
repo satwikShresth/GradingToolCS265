@@ -2,7 +2,7 @@ import os
 import subprocess
 from dateutil import parser
 from zipfile import ZipFile
-PATH = "/home/ss5278/GradeScript"
+TOOLS = "/home/ss5278/GradeScript/tools"
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class c_Student():
@@ -81,7 +81,7 @@ class c_Student():
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def m_editFile(self,filename=None):
-        micro = os.path.join(PATH,"micro")
+        micro = os.path.join(TOOLS,"micro")
         if filename is not None:
             subprocess.run([micro, f"{filename}"])
         else:

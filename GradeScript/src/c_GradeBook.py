@@ -5,7 +5,7 @@ from tabulate import tabulate
 
 PROFILE = "/home/ss5278/GradeScript/studentProfiles"
 
-class c_GradeMain:
+class c_GradeBook:
     def __init__(self,uI:c_termianlUserInterface,assignmentName,Grade=100, grader="Satwik Shresth"):
         self.o_uI = uI
         self.assignmentName = assignmentName

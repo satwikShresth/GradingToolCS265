@@ -1,11 +1,11 @@
-from c_GradeMain import c_GradeMain
+from c_GradeBook import c_GradeBook
 import subprocess
 import time
 
 
 class c_Mail():
-    def __init__(self, GradeMain: c_GradeMain, senderAddress="noreply@cs265.drexel.edu", s_subject="Feedback for Lab5", s_grader="Satwik Shresth"):
-        self.o_gradeMain: c_GradeMain = GradeMain
+    def __init__(self, GradeMain: c_GradeBook, senderAddress="noreply@cs265.drexel.edu", s_subject="Feedback for Lab5", s_grader="Satwik Shresth"):
+        self.o_gradeMain: c_GradeBook = GradeMain
         self.s_senderAddress: str = senderAddress
         self.s_subject: str = s_subject
         self.footer = f"\nBest,\n{s_grader}\nBSc Computer Science\nCollege of Computing and Informatics\nDrexel University\nPhiladelphia, PA 19104\nsatwik.shresth@drexel.edu\n"

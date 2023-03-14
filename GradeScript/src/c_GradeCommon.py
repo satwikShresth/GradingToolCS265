@@ -6,10 +6,6 @@ from c_AssignmentTrack import c_AssignmentTrack
 from c_Student import c_Student
 
 
-
-PATH = "/home/ss5278/GradeScript"
-
-
 class c_GradeCommon(c_AssignmentTrack):
     def __init__(self,uI: c_termianlUserInterface,jsonData):
         self.o_uI = uI

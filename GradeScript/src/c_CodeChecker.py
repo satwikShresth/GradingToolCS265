@@ -1,9 +1,9 @@
 import copydetect,os
 import mosspy
-from c_GradeMain import c_GradeMain
+from c_GradeBook import c_GradeBook
 
 class c_CodeChecker:
-    def __init__(self,o_gradeMain:c_GradeMain):
+    def __init__(self,o_gradeMain:c_GradeBook):
         self.o_gradeMain = o_gradeMain
         os.mkdir("AssignmentReport")
         self.reportDir = os.path.join(os.getcwd(),"AssignmentReport")

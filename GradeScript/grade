@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
-import sys,traceback
+import sys,traceback,os
 from src.c_Shell import c_Shell
 from src.c_TerminalUserInterface import c_termianlUserInterface
 
+
+
 def main():
     uI = c_termianlUserInterface()
-    try:
-        c_Shell(uI)
-    except Exception as e:
-        uI.m_end()
-        traceback.print_exc()
-        sys.exit(1)
+    # Check if the current user is the file owner
+    if os.getuid() == os.stat(__file__).st_uid:
+        if os.geteuid() != 0:
+            print("administrator mode")
+    else:
+        
+        try:
+            c_Shell(uI)
+        except Exception as e:
+            uI.m_end()
+            traceback.print_exc()
+            sys.exit(1)
 
 
 
