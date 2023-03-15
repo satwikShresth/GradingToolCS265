@@ -1,5 +1,5 @@
 import curses,os
-
+from .c_Grader import permission
 
 class c_termianlUserInterface():
     #initilizing readable characters and screen
@@ -22,7 +22,9 @@ class c_termianlUserInterface():
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     def m_end(self):
         curses.endwin()
-
+        
+    def m_restart(self):
+        self.screen = curses.initscr()
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     def m_selectStudents(self,listOfStudents,gradedStudent)->bool:
         self.m_preReq()
@@ -87,6 +89,75 @@ class c_termianlUserInterface():
         return list(listOfStudents.keys())[self.selected_item-1]
 
 
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    def m_selectGraders(self,ListOfGraders):
+        self.m_preReq()
+        sep1 = "-"*39
+        sep2= "-"*8
+        self.instructions=[f"Name{'':35} {'':3}Grade",f"{sep1} {sep2}"]
+        self.content = []
+        for name,obj in ListOfGraders.items():
+            display = f'{obj.name} ({obj.username})'
+            if obj.status != permission.REQUESTED:
+                status = "Active" if obj.status == permission.GRANTED else "Denied"
+                self.instructions += [f'{ (obj.username):<39} {status:<8}']
+            else:
+                self.content += [f'{display:<39} {"Requested":<8}']
+        while True:
+            self.dir_content = ["Search"] + self.content
+            curses.curs_set(0)
+            self.m_mrefresh()
+
+            if(self.checkMove()):
+                if self.dir_content[self.selected_item] == self.dir_content[0]:
+                    self.dir_content[self.selected_item] = ""
+                    curx=3
+                    curses.curs_set(1)
+                    while (1): 
+                        self.screen.move(self.idx+self.selected_item,curx)
+                        self.m_mrefresh()
+                        string = self.dir_content[self.selected_item]
+                        if self.key == curses.KEY_LEFT:
+                            if curx >3:
+                                curx -=1
+                        elif self.key == curses.KEY_RIGHT: 
+                            if curx < len(string)+3:
+                                curx +=1
+                        elif self.key == curses.KEY_BACKSPACE or self.key == 127: 
+                            if curx >3 and len(string) >= curx-3:
+                                curx -=1
+                                self.dir_content[self.selected_item] = string[:curx-3] + string[curx-3+1:]
+                        elif self.key == ord("\n"):
+                            break
+                        else:
+                            str = chr(self.key)
+                            if str in self.readable_characters and len(string) < (self.width-5):
+                                if curx-3 == 0:
+                                    self.dir_content[self.selected_item] = str+string
+                                else :
+                                    self.dir_content[self.selected_item] = string[:curx-3] + str + string[curx-3:]
+                                curx +=1
+                        del self.dir_content[1::]
+                        for name,obj in ListOfGraders.items():
+                            display = f'{obj.name} ({obj.username})'
+                            if self.dir_content[self.selected_item] in display:
+                                if obj.status != permission.REQUESTED:
+                                    status = "Active" if obj.status == permission.GRANTED else "Denied"
+                                    self.instructions += [f'{ (obj.username):<39} {status:<8}']
+                                else:
+                                    self.content += [f'{display:<39} {"Requested":<8}']
+                    curses.curs_set(0)
+                else:
+                    break
+
+        self.screen.clear()
+        self.screen.refresh()
+        curses.endwin()
+        
+        return list(ListOfGraders.values())[self.selected_item-1]
+
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #checks the keystroke if its pointing up or down
     #return true if enter is pressed

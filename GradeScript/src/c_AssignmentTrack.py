@@ -1,7 +1,7 @@
 import os,sys
 import subprocess
-from c_Student import c_Student
-from c_TerminalUserInterface import c_termianlUserInterface
+from .c_Student import c_Student
+from .c_TerminalUserInterface import c_termianlUserInterface
 
 PATH = "/home/ss5278/GradeScript"
 
@@ -13,7 +13,7 @@ class c_AssignmentTrack():
         self.data = data
 #--------------------------------------------------------------------------------------------------------------------------------------
     def m_initalizer(self):
-        from c_GradeCommon import c_GradeCommon
+        from .c_GradeCommon import c_GradeCommon
         return c_GradeCommon(self.o_uI,self.data)            
 
 #--------------------------------------------------------------------------------------------------------------------------------------

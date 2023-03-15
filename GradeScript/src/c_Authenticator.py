@@ -1,91 +1,125 @@
 import os
 import hashlib
-import json,pickle
-from c_Grader import c_Grader
-from c_TerminalUserInterface import c_termianlUserInterface
+import pickle
+from .hiddenMethods import generateHashKey
+from .c_Grader import c_Grader,permission
+from .c_TerminalUserInterface import c_termianlUserInterface
+from .c_Mail import c_Mail
 
 PROFILE = "/home/ss5278/GradeScript/graderProfiles"
 
-class c_Authenticator:
-    def __init__(self,uI:c_termianlUserInterface,keyFile = ".gradeKey"):
-        self.o_uI = uI
-        self.keyFile = keyFile
-        self.d_listOfGrader:dict[str:c_Grader]
-        self.m_Initialize()
-        self.s_tabFileName = "grades.tab"
 
+class c_Authenticator:
+    def __init__(self, keyFile=".gradeKey"):
+        self.keyFile = keyFile
+        self.authentication = False
+        self.instructionsGranted="1. Create a file .gradeKey in your home directory\n2. Copy the hash key below into the file\n-----------------------copy-below-----------------------\n\n"
+        self.instructionsDenied="You have been denied for Gradekey"
+        self.mail = c_Mail(s_subject="Instructions for your CS265 grader tool")
+        self.m_Initialize()
 
     def m_Initialize(self):
-        self.grader = os.getcwd().split("/")[2]
-        self.m_loadKeyFile()
-        self.d_listOfStudents = dict(sorted(self.d_listOfStudents.items()))
+        grader = os.getcwd().split("/")[2]
+        usrKey = self.m_loadKeyFile()
+        self.grader,profileKey  = self.m_loadProfile(grader)
 
-    def m_getGrader(self, name):
-        return self.d_listOfGrader[name]
+        if not usrKey and not profileKey:
+            print("New User: ",self.grader)
+            if input("Create a new profile!! [y]/n ").lower == "n":
+                SystemExit()
+            else:
+                homeDir = os.path.expanduser("~")
+                self.m_createNewGrader(homeDir.split("/")[2])
+        elif usrKey and not profileKey :
+            print("This incident will be reported!!")
+            SystemExit()
+        elif not usrKey and profileKey:
+            print("Please check your email for instructions!")
+            if input("Do you want to resend the email with instructions? y/[n]").lower() == "y":
+                self.m_sendInstructions(self.grader)
+        elif usrKey and profileKey:
+            if self.authenticate(usrKey,profileKey):
+                self.authentication = True
+            else:
+                print("Autentication Failed")
+                if input("Do you want to resend the email with instructions? y/[n]").lower() == "y":
+                    self.m_sendInstructions(self.grader)
+    
 
-    def m_createNewGrader(self):
+    def m_sendInstructions(self,grader):
+        if grader.status == permission.GRANTED:
+            self.mail.m_sendInstructions(self.instructionsGranted,self.grader.hashKey,self.grader.username) # type: ignore
+        elif grader.status == permission.DENIED:
+            self.mail.m_sendInstructions(self.instructionsGranted,self.grader.hashKey,self.grader.username) # type: ignore
+        elif grader.status == permission.REQUESTED:
+            print("Please Wait till we complete your request")
+
+    def authenticate(self,usr_hashKey,profile_hashKey):
+        return usr_hashKey == profile_hashKey
+
+
+    def m_createNewGrader(self,usrname):
+        print("New User: ",usrname)
+        name = input("Enter a name: ")
+        password = input("Enter a password: ")
+        keyData = f"{usrname}:{name}:{password}".encode("utf-8")
+        hashKey = generateHashKey(usrname,name,password)
+        self.grader = c_Grader(usrname,name,hashKey)
+        self.m_saveProfile(self.grader)
+        print("Your request has been sent to the Admin")
+        input("enter any key to continue...")
+
+    def m_saveProfile(self, obj:c_Grader):
+        try:
+            with open(os.path.join(PROFILE, f"{obj.username}.profile"), "wb+") as f:
+                pickle.dump(obj, f)
+        except Exception as e:
+            print(f"Error:", f"{e}")
+            input("press anything to continue...")
+
 
     def m_loadKeyFile(self):
-        home_dir = os.path.expanduser("~")
-        key_file_path = os.path.join(home_dir,".gradeKey")
+        gradeKey = False
+        homeDir = os.path.expanduser("~")
+        keyFilePath = os.path.join(homeDir, ".gradeKey")
         try:
-            with open(key_file_path, "r") as key_file:
-                self.gradeKey = key_file.read().strip()
-                self.m_loadProfile()
+            with open(keyFilePath, "r") as key_file:
+                gradeKey = key_file.read().strip()
         except:
+            print(".graderKey file not found")
+            input("press anything to continue...")
+        
+        return gradeKey
 
-
-
-
-
-
-
-    def m_saveProfile(self,name):
+    def m_loadProfile(self,grader):
         try:
-            with open(os.path.join(PROFILE,f"{name}.profile"), "wb+") as f:
-                pickle.dump(self.d_listOfStudents[name],f)
-        except Exception as e:
-            instructions = [f"Error:", f"{e}"]
-            options = [f"Continue"]
-            self.o_uI.m_terminalUserInterface(options, instructions)
-            
+            with open(os.path.join(PROFILE, f"{grader}.profile"), "rb") as f:
+                grader = pickle.load(f)
+            return (grader,grader.hashKey)
+        
+        except:
+            print(f"{self.grader} profile not found")
+            input("press anything to continue...")
+        
+        return (False,False)
+    
+    def m_createDic(self):
+        self.d_graders = {}
+        for files in os.listdir(PROFILE):
+            name = files.split(".")[0]
+            self.d_graders[name],hashKey = self.m_loadProfile(name)
 
-    def m_loadProfile(self):
-        try:
-            with open(os.path.join(PROFILE,f"{self.grader}.profile"), "rb") as f:
-                self.grader = pickle.load(f)
-            self.authenticate(self.grader.hashKey)
-
-
-        except Exception as e:
-            instructions = [f"Error:", f"{self.grader}.profile not found in database","Create new profile ?"]
-            options = [f"Continue","Skip"]
-            response = self.o_uI.m_terminalUserInterface(options, instructions)
-            if response == options[0]:
-                self.d_listOfStudents[self.grader] = c_Grader(self.grader)
-                with open(os.path.join(PROFILE,f"{self.grader}.profile"), "wb+") as f:
-                    pickle.dump(self.d_listOfStudents[self.grader],f)
-
-
-    def create_user_directory(self):
-        if not os.path.exists(self.home_directory):
-            os.makedirs(self.home_directory)
-
-    def save_grade_key(self):
-        key_file_path = os.path.join(self.home_directory, ".gradeKey")
-        with open(key_file_path, "w") as key_file:
-            key_file.write(self.hash_key)
-
-    def save_user_profile(self):
-        profile = {
-            "username": self.username,
-            "hash_key": self.hash_key
-        }
-        profile_file_path = os.path.join(self.cwd, f"{self.username}_profile.json")
-        with open(profile_file_path, "w") as profile_file:
-            json.dump(profile, profile_file)
-
-    def create_account(self):
-        self.create_user_directory()
-        self.save_grade_key()
-        self.save_user_profile()
+    def m_admin(self,uI:c_termianlUserInterface):
+        self.m_createDic()
+        grader:c_Grader = uI.m_selectGraders(self.d_graders)
+        instructions = [f'{grader.name} ({grader.username}) has requested for permission']
+        options= ["Grant Permission","Deny","Go back"]
+        selected = uI.m_terminalUserInterface(options,instructions)
+        if selected is options[0]:
+            grader.status = permission.GRANTED
+        elif selected is options[1]:
+            grader.status = permission.DENIED
+        self.m_saveProfile(grader)
+        uI.m_end()
+        self.m_sendInstructions(grader)
+        uI.m_restart()

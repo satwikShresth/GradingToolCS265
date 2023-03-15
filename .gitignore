@@ -77,3 +77,15 @@
 .gitignore
 moss
 GradeScript/src/__pycache__/c_Shell.cpython-310.pyc
+GradeScript/graderProfiles/ss5278.profile
+GradeScript/src/__pycache__/c_AssignmentTrack.cpython-310.pyc
+GradeScript/src/__pycache__/c_Authenticator.cpython-310.pyc
+GradeScript/src/__pycache__/c_DirOrganizer.cpython-310.pyc
+GradeScript/src/__pycache__/c_GradeBook.cpython-310.pyc
+GradeScript/src/__pycache__/c_GradeCommon.cpython-310.pyc
+GradeScript/src/__pycache__/c_Grader.cpython-310.pyc
+GradeScript/src/__pycache__/c_Mail.cpython-310.pyc
+GradeScript/src/__pycache__/c_Student.cpython-310.pyc
+GradeScript/src/__pycache__/c_TerminalUserInterface.cpython-310.pyc
+.gradeKey
+.gitignore

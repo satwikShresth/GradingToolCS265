@@ -1,6 +1,6 @@
 import copydetect,os
 import mosspy
-from c_GradeBook import c_GradeBook
+from .c_GradeBook import c_GradeBook
 
 class c_CodeChecker:
     def __init__(self,o_gradeMain:c_GradeBook):

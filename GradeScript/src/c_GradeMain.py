@@ -11,7 +11,7 @@ class c_GradeBook():
         self.assignmentName = assignmentName
         self.f_grade: float = Grade
         self.s_grader: str = grader
-        self.d_listOfStudents:dict
+        self.d_listOfStudents:dict[str:c_Student]
         self.m_StudentsDict()
         self.d_listOfStudentsGraded: dict = dict()
         self.s_tabFileName = "grades.tab"

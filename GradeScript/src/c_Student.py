@@ -16,7 +16,7 @@ class c_Student():
         self.m_initalizeCurrentGrader()
         self.m_initlaizeStudent()
         self.s_initialFeedback: str = ""
-        self.ls_filenames:dict = {}
+        self.ls_filenames:list
         self.s_feedback: str = self.m_InitFeedback()
         self.parsedAnswers:dict
 
@@ -54,8 +54,7 @@ class c_Student():
                 self.assignment = str(line.split("Assignment: ")[1].strip())
             if "Date Submitted:" in line:
                 submission = str(line.split("Date Submitted: ")[1].strip())
-
-        self.submissions[self.assignment] = submission
+                self.submissions[self.assignment] = submission
         
 
         
@@ -72,7 +71,7 @@ class c_Student():
         return f"Name: {self.s_fullname}\nAssignment: {self.assignment}\nDate Submitted: {self.submissions[self.assignment]}\nGrader: {self.s_grader}\nGrade: ?!?\n\nFeedback:-\n"
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    def m_FeedbackHeader(self, filePath) -> str:
+    def m_FeedbackHeader(self, filePath):
         with open(filePath, 'r') as file:
             lines = file.readlines()[:3]
         return lines

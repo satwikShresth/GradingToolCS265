@@ -1,9 +1,9 @@
-from c_GradeBook import c_GradeBook
-from c_DirOrganizer import c_DirOrganizer
-from c_AssignmentTrack import c_AssignmentTrack
-from c_Mail import c_Mail
-from c_Student import c_Student
-from c_TerminalUserInterface import c_termianlUserInterface
+from .c_GradeBook import c_GradeBook
+from .c_DirOrganizer import c_DirOrganizer
+from .c_AssignmentTrack import c_AssignmentTrack
+from .c_Mail import c_Mail
+from .c_Student import c_Student
+from .c_TerminalUserInterface import c_termianlUserInterface
 from tabulate import tabulate
 import os
 import json,sys
@@ -21,7 +21,7 @@ class c_Shell():
         self.o_grade = assignment.m_initalizer()
         c_DirOrganizer()
         self.o_gradeMain: c_GradeBook = c_GradeBook(self.o_uI,self.assignmentName)
-        self.mail: c_Mail = c_Mail(self.o_gradeMain)
+        self.mail: c_Mail = c_Mail(obj=self.o_gradeMain)
         self.m_loadProgress()
         self.i_assignmentsToGrade: int = len(self.o_gradeMain.d_listOfStudents)
         self.m_menu()
@@ -235,7 +235,7 @@ class c_Shell():
                 options2 = ["Continue"]
                 self.o_uI.m_terminalUserInterface(options2,instructions2)
             elif (selectedData == options[4]):
-                from c_CodeChecker import c_CodeChecker
+                from .c_CodeChecker import c_CodeChecker
                 self.codeChecker = c_CodeChecker(self.o_gradeMain)
                 ins = ["Which Plagerism Dedection Software do you want to use ?"]
                 selectionOfService = ["Moss","CopyDedect","Both"]

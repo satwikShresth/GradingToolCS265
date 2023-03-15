@@ -1,9 +1,9 @@
 import os,shutil
 import subprocess
 import sys,re,json
-from c_TerminalUserInterface import c_termianlUserInterface
-from c_AssignmentTrack import c_AssignmentTrack
-from c_Student import c_Student
+from .c_TerminalUserInterface import c_termianlUserInterface
+from .c_AssignmentTrack import c_AssignmentTrack
+from .c_Student import c_Student
 
 
 class c_GradeCommon(c_AssignmentTrack):
@@ -100,14 +100,16 @@ class c_GradeCommon(c_AssignmentTrack):
                 self.answerCheck = []
                 self.m_testOutput(expected)
                 if(len(self.answerCheck) >= 1):
-                    pointsDeduct -= pointDivided*len(self.answerCheck)
-                    output = f" {'':23}-> ".join(self.output.split("\n"))
-                    student.s_initialFeedback += f" {pointsDeduct:<6} Failed Test     -> {input}\n"
+                    pointz = 0
+                    pointz -= pointDivided*len(self.answerCheck) if pointsDeduct >5 else 5
+                    output = f"\n {'':23}-> ".join(self.output.split("\n"))
+                    student.s_initialFeedback += f" {pointz:<6} Failed Test     -> {input}\n"
                     student.s_initialFeedback += f" {'':6} Input type      -> {inputType}\n"
                     student.s_initialFeedback += f" {'':6} Desired output  -> {expected}\n"
                     student.s_initialFeedback += f" {'':6} Your ouput      -> {output}\n"
                     student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
             self.output = ""
+            pointsDeduct += points
         if (pointsDeduct == 0):
             student.s_initialFeedback += f"{'':6} All test strings passed\n"
             student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
@@ -175,8 +177,12 @@ class c_GradeCommon(c_AssignmentTrack):
         if type(filesReq) == str:
             filesReq = [filesReq]
         for file in filesReq:
-            studentCurrentFilenames.append(self._CheckFile_(student,file))
-        student.ls_filenames+=studentCurrentFilenames
+            if file in student.ls_filenames:
+                actualFilename = self._CheckFile_(student,student.ls_filenames[file])
+            else:
+                actualFilename = self._CheckFile_(student,file)
+            studentCurrentFilenames.append(actualFilename)
+            student.ls_filenames[file] = actualFilename
 
         if  False not in studentCurrentFilenames:
             proc = ["gcc"]
@@ -251,7 +257,7 @@ class c_GradeCommon(c_AssignmentTrack):
         except Exception as e:
             feedback.append(f"Error while checking memory leak: {e}\n")
 
-        if "All heap blocks were freed -- no leaks are possible" not in output:
+        if "All heap blocks were freed -- no leaks are possible" not in output: # type: ignore
             match = re.search(r'total heap usage: (\d+) allocs, (\d+) frees', output)
             if match:
                 numAllocs = int(match.group(1))
