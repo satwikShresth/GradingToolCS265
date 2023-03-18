@@ -240,12 +240,14 @@ class c_Shell():
                 ins = ["Which Plagerism Dedection Software do you want to use ?"]
                 selectionOfService = ["Moss","CopyDedect","Both"]
                 select = self.o_uI.m_terminalUserInterface(selectionOfService,ins)
+                self.o_uI.m_end()
                 if select == selectionOfService[0]:
                     self.codeChecker.m_generateMossReport()
                 elif select == selectionOfService[1]:
                     self.codeChecker.m_generateCCReport()
                 elif select == selectionOfService[2]:
                     self.codeChecker.m_generateCCReport()
+                self.o_uI.m_restart()
             elif (selectedData == options[5]):
                 # Post-Req
                 # print(f'Changing working directory back to {currentWorkingDir}')

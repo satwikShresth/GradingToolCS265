@@ -16,7 +16,7 @@ class c_Student():
         self.m_initalizeCurrentGrader()
         self.m_initlaizeStudent()
         self.s_initialFeedback: str = ""
-        self.ls_filenames:list
+        self.ls_filenames:list = []
         self.s_feedback: str = self.m_InitFeedback()
         self.parsedAnswers:dict
 
@@ -39,6 +39,7 @@ class c_Student():
         self.m_initalizeCurrentGrader()
         self.s_feedback = self.m_InitFeedback()
         self.s_initialFeedback: str = ""
+        self.f_grade = 100
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -48,9 +49,9 @@ class c_Student():
     def m_initlaizeStudent(self):
         lines = self.m_FeedbackHeader(os.path.join(os.getcwd(), self.s_name, self.s_submitLog))
         for line in lines:
-            if "Name:" in line:
+            if "Name: " in line:
                 self.s_fullname = str(line.split("Name: ")[1].strip())
-            if "Assignment:" in line:
+            if "Assignment: " in line:
                 self.assignment = str(line.split("Assignment: ")[1].strip())
             if "Date Submitted:" in line:
                 submission = str(line.split("Date Submitted: ")[1].strip())
@@ -82,18 +83,18 @@ class c_Student():
     def m_editFile(self,filename=None):
         micro = os.path.join(TOOLS,"micro")
         if filename is not None:
-            subprocess.run([micro, f"{filename}"])
+            proc = subprocess.Popen([micro, f"{filename}"])
         else:
-            subprocess.run([micro, f"{self.s_feedbackFile}"])
-        
+            proc = subprocess.Popen([micro, f"{self.s_feedbackFile}"])
+        proc.wait()
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     def m_showFile(self,filename=None):
         if filename is not None:
-            subprocess.run(["less", f"{filename}"])
+            proc = subprocess.Popen(["less", f"{filename}"])
         else:
-            subprocess.run(["less", f"{self.s_feedbackFile}"])
-
+            proc = subprocess.Popen(["less", f"{self.s_feedbackFile}"])
+        proc.wait()
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     def m_fileToStringList(self, filename):
         with open(filename, "r") as file:
@@ -103,10 +104,10 @@ class c_Student():
     def m_registerGrade(self):
         content = self.m_fileToStringList(self.s_feedbackFile)
         for line in content:
-            if "Grade:" in line:
+            if 'Grade: ' in line:
                 grade = float(line.split("Grade:")[1].strip())
                 self.f_grade = grade
-            if "Name:" in line:
+            if 'Name: ' in line:
                 self.s_fullname = str(line.split("Name: ")[1].strip())
         
 

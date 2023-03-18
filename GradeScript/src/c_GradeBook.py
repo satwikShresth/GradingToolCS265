@@ -58,7 +58,7 @@ class c_GradeBook():
         keywords = ["Grader:","Part-","Grade:","All test strings passed","Bad file name: ","Feedback:\n"," -> ","Late Submission:","Question","* "]
         bbFeedbackFile = ""
         for name, _ in self.d_listOfStudentsGraded.items():
-            bbFeedbackFile += f"--------------------------------{name}---------------------------------------\n"
+            bbFeedbackFile += f"--------------------------------{self.m_getStudent(name).s_fullname}---------------------------------------\n"
             with open(os.path.join(".", name,self.m_getStudent(name).s_feedbackFile),"r") as file:
                 lines = file.readlines()
             for line in lines:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys,traceback,os
-import src
+import src,curses
 from src.c_Authenticator import c_Authenticator
 from src.c_Shell import c_Shell
 from src.c_TerminalUserInterface import c_termianlUserInterface
@@ -8,27 +8,27 @@ from src.c_TerminalUserInterface import c_termianlUserInterface
 
 
 def main():
-    auth = c_Authenticator()
-    # Check if the current user is the file owner
-    uI = c_termianlUserInterface()
-    if os.getuid() == os.stat(__file__).st_uid:
-        if os.geteuid() != 0:
-            if sys.argv[1] == "-a":
-                auth.m_admin(uI)
-
-    else:
+    try:
+        auth = c_Authenticator()
+        # Check if the current user is the file owner
+        uI = c_termianlUserInterface()
+        if os.getuid() == os.stat(__file__).st_uid:
+            if os.geteuid() != 0:
+                if "-a" in sys.argv:
+                    auth.m_admin(uI)
+                
         if auth.authentication:
             ins =["Authentication Succesful"]
-            options =["Press anything to continue"]
+            options =["Continue"]
             uI.m_terminalUserInterface(options,ins)
-            try:
-                c_Shell(uI)
-            except Exception as e:
-                uI.m_end()
-                traceback.print_exc()
-                sys.exit(1)
+            c_Shell(uI)
         else:
             sys.exit(1)
+
+    except Exception as e:
+        curses.endwin()
+        traceback.print_exc()
+        sys.exit(1)
 
 
 

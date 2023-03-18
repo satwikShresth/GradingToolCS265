@@ -9,6 +9,8 @@ class c_termianlUserInterface():
         curses.mousemask(curses.ALL_MOUSE_EVENTS)
         curses.mouseinterval(60)
         curses.curs_set(0)
+        self.screen.idlok(False)
+        self.screen.idcok(False)
         self.stringEditMode = False
         self.readable_characters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
                         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -82,7 +84,7 @@ class c_termianlUserInterface():
                 else:
                     break
 
-        self.screen.clear()
+        self.screen.erase()
         self.screen.refresh()
         curses.endwin()
         
@@ -150,7 +152,7 @@ class c_termianlUserInterface():
                 else:
                     break
 
-        self.screen.clear()
+        self.screen.erase()
         self.screen.refresh()
         curses.endwin()
         
@@ -168,7 +170,6 @@ class c_termianlUserInterface():
                 self.idy+=1
             elif mouse_event == 65536 and self.idy >= 1:
                 self.idy-=1
-            self.win.addstr(self.idx, 0,str(self.idy))
         elif self.key == curses.KEY_UP:
             if self.selected_item > 0:
                 self.selected_item -= 1
@@ -220,7 +221,7 @@ class c_termianlUserInterface():
             elif self.key == ord("q"):
                 return "q"
 
-        self.screen.clear()
+        self.screen.erase()
         self.screen.refresh()
         return os.path.join(path, self.dir_content[self.selected_item])
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -230,13 +231,18 @@ class c_termianlUserInterface():
         self.instructions = instructions[:-1]
         self.dir_content = options
         self.static = [instructions[-1]]
+        try:
+            for i, inputString in enumerate(self.instructions):
+                self.instructions[i] = "".join([char if char in self.readable_characters else "?" for char in inputString])
+        except:
+            pass
         while True:
             self.m_refresh()
 
             if(self.checkMove()):
                 break
 
-        self.screen.clear()
+        self.screen.erase()
         self.screen.refresh()
         return self.dir_content[self.selected_item]
     
@@ -252,24 +258,22 @@ class c_termianlUserInterface():
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #refreshes the screen with new information evertime its called
     def m_refresh(self)-> None:
-        self.win.clear()
+        self.win.erase()
         self.height, self.width = self.screen.getmaxyx()
         self.win.resize(self.height, self.width)
-        self.win.refresh()
+        self.win.noutrefresh()
+        curses.doupdate()
         self.idx = 0
         local_idx = 0
         
-        try:
-            for i, inputString in enumerate(self.instructions):
-                self.instructions[i] = "".join([char if char in self.readable_characters else "?" for char in inputString])
-        except:
-            pass
 
         self.limit = len(self.instructions) -  self.height//2 +1
         for idx,instruction in enumerate(self.instructions):
             if self.idx < self.height//2-1 and idx >= self.idy:
                 self.win.addstr(self.idx, 0, instruction,self.width)
                 self.idx += 1
+            elif self.idx >= self.height//2-1:
+                break
 
         if self.idx > self.height//2:
             self.idx = self.height//2
@@ -298,39 +302,37 @@ class c_termianlUserInterface():
                     self.win.addstr(idx2 + self.idx, 0,item +str(" "*(self.width-len(item))))
 
         # Refresh the screen
-        self.win.refresh()
+        self.win.noutrefresh()
+        curses.doupdate()
         self.key = self.screen.getch()
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #refreshes the screen with new information evertime its called
     def m_feedbackRefresh(self)-> None:
-        self.win.clear()
+        # self.win.erase()
         self.height, self.width = self.screen.getmaxyx()
         self.win.resize(self.height, self.width)
         self.displayWin.resize(self.height//2,self.width)
         self.menuWin.resize(self.height//2,self.width)
-        self.win.refresh()
+        self.win.noutrefresh()
+        curses.doupdate()
         self.displayWin.refresh()
         self.menuWin.refresh()
         self.idx = 0
         local_idx=0
         static = 0
-
-        try:
-            for i, inputString in enumerate(self.instructions):
-                self.instructions[i] = "".join([char if char in self.readable_characters else "?" for char in inputString])
-        except:
-            pass
         
         self.limit = len(self.instructions) -  self.height//2 +2
         for idx,instruction in enumerate(self.instructions):
             if self.idx < self.height//2 -2 and idx >= self.idy:
-                self.displayWin.addstr(self.idx, 0, instruction,self.width)
+                self.displayWin.addstr(self.idx, 0, instruction+str(" "*(self.width-len(instruction))),self.width)
                 self.idx += 1
+            elif self.idx >= self.height//2-2:
+                break
 
         self.displayWin.addstr(self.height//2 -2, 0, "-"*self.width,self.width)
 
         for idx, item in enumerate(self.static):
-            self.menuWin.addstr(idx, 0,item)
+            self.menuWin.addstr(idx, 0,item+str(" "*(self.width-len(item))))
             local_idx+=1
 
         self.menuWin.addstr(local_idx, 0, "-"*self.width,self.width)
@@ -340,19 +342,20 @@ class c_termianlUserInterface():
             if idx2 == self.selected_item:
                 if len(self.dir_content)>3 and idx2<len(self.dir_content)-3:
                     if self.stringEditMode:
-                        self.menuWin.addstr(idx2 +local_idx, 0,item)
+                        self.menuWin.addstr(idx2 +local_idx, 0,item +str(" "*(self.width-len(item))))
                     else:
                         self.menuWin.addstr(idx2 +local_idx, 0,"* " + item +str(" "*(self.width-len(item))),curses.A_REVERSE)
                 else:
                     self.menuWin.addstr(idx2+ local_idx, 0,item+str(" "*(self.width-len(item))),curses.A_REVERSE)
             elif len(self.dir_content)>3 and idx2<len(self.dir_content)-3 and len(item)!=0:
-                self.menuWin.addstr(idx2+local_idx, 0,"* "+ item)
+                self.menuWin.addstr(idx2+local_idx, 0,"* "+ item +str(" "*(self.width-len(item))))
             else:
-                self.menuWin.addstr(idx2+local_idx, 0,item)
+                self.menuWin.addstr(idx2+local_idx, 0,item +str(" "*(self.width-len(item))))
 
 
         # Refresh the screen
-        self.win.refresh()
+        self.win.noutrefresh()
+        curses.doupdate()
         self.displayWin.refresh()
         self.menuWin.refresh()
         self.key = self.screen.getch()
@@ -361,10 +364,11 @@ class c_termianlUserInterface():
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #refreshes the screen with new information evertime its called
     def m_mrefresh(self)-> None:
-        self.win.clear()
+        # self.win.erase()
         self.height, self.width = self.screen.getmaxyx()
         self.win.resize(self.height, self.width)
-        self.win.refresh()
+        self.win.noutrefresh()
+        curses.doupdate()
         self.idx = 0
 
         self.limit = len(self.instructions) + len(self.dir_content)
@@ -380,7 +384,8 @@ class c_termianlUserInterface():
                     self.win.addstr(idx2 + self.idx, 0,item,)
 
         # Refresh the screen
-        self.win.refresh()
+        self.win.noutrefresh()
+        curses.doupdate()
         self.key = self.screen.getch()
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #initlizes values
@@ -402,6 +407,11 @@ class c_termianlUserInterface():
         self.instructions = instructions
         self.displayWin = self.win.subwin(self.height//2,self.width,0,0)
         self.menuWin = self.win.subwin(self.height//2,self.width,self.height//2-1,0)
+        try:
+            for i, inputString in enumerate(self.instructions):
+                self.instructions[i] = "".join([char if char in self.readable_characters else "?" for char in inputString])
+        except:
+            pass
         for i, inputString in enumerate(self.instructions):
                 if "Feedback:" in inputString:
                     self.static = self.instructions[i::]
@@ -448,7 +458,7 @@ class c_termianlUserInterface():
                 elif self.dir_content[self.selected_item] == self.dir_content[-1]:
                     break
 
-        self.screen.clear()
+        self.screen.erase()
         self.screen.refresh()
 
         return self.dir_content[:-3] if len(self.dir_content) >3 else None 

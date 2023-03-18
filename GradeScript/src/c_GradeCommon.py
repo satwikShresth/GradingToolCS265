@@ -101,15 +101,15 @@ class c_GradeCommon(c_AssignmentTrack):
                 self.m_testOutput(expected)
                 if(len(self.answerCheck) >= 1):
                     pointz = 0
-                    pointz -= pointDivided*len(self.answerCheck) if pointsDeduct >5 else 5
+                    pointz -= pointDivided*len(self.answerCheck)
                     output = f"\n {'':23}-> ".join(self.output.split("\n"))
                     student.s_initialFeedback += f" {pointz:<6} Failed Test     -> {input}\n"
                     student.s_initialFeedback += f" {'':6} Input type      -> {inputType}\n"
                     student.s_initialFeedback += f" {'':6} Desired output  -> {expected}\n"
                     student.s_initialFeedback += f" {'':6} Your ouput      -> {output}\n"
                     student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
+                    pointsDeduct += pointz
             self.output = ""
-            pointsDeduct += points
         if (pointsDeduct == 0):
             student.s_initialFeedback += f"{'':6} All test strings passed\n"
             student.s_initialFeedback += f"-----------------------------------------------------------------------\n"
@@ -139,32 +139,32 @@ class c_GradeCommon(c_AssignmentTrack):
                 answers[count].append(line)
         return answers
     
-    def m_checkQuestionInBash(self, student: c_Student,execFile,question):
-        points = 0
-        studentCurrentFilenames = []
-        totalPoints = question["totalPoints"]
-        testString = question["testStrings"]
-        filesReq = question["file"]
+    # def m_checkQuestionInBash(self, student: c_Student,execFile,question):
+    #     points = 0
+    #     studentCurrentFilenames = []
+    #     totalPoints = question["totalPoints"]
+    #     testString = question["testStrings"]
+    #     filesReq = question["file"]
 
-        if type(filesReq) == str:
-            filesReq = [filesReq]
-        for file in filesReq:
-            if file in student.ls_filenames:
-                actualFilename = self._CheckFile_(student,student.ls_filenames[file])
-            else:
-                actualFilename = self._CheckFile_(student,file)
-            studentCurrentFilenames.append(actualFilename)
-            student.ls_filenames[file] = actualFilename
+    #     if type(filesReq) == str:
+    #         filesReq = [filesReq]
+    #     for file in filesReq:
+    #         if file in student.ls_filenames:
+    #             actualFilename = self._CheckFile_(student,student.ls_filenames[file])
+    #         else:
+    #             actualFilename = self._CheckFile_(student,file)
+    #         studentCurrentFilenames.append(actualFilename)
+    #         student.ls_filenames[file] = actualFilename
 
-        if  False not in studentCurrentFilenames:
-            fileContent = self.m_filesToStringList(studentCurrentFilenames)
-            answers ={}
-            answers = self.m_divideQuestions(fileContent,0,answers)
+    #     if  False not in studentCurrentFilenames:
+    #         fileContent = self.m_filesToStringList(studentCurrentFilenames)
+    #         answers ={}
+    #         answers = self.m_divideQuestions(fileContent,0,answers)
 
-            testString = None
-        else:
-            student.s_initialFeedback += f" {-totalPoints:<6} Required File Missing"
-            student.f_grade -= totalPoints
+    #         testString = None
+    #     else:
+    #         student.s_initialFeedback += f" {-totalPoints:<6} Required File Missing"
+    #         student.f_grade -= totalPoints
 #--------------------------------------------------------------------------------------------------------------------------------------
     
     def m_checkQuestionInC(self, student: c_Student,execFile,question):
@@ -182,7 +182,7 @@ class c_GradeCommon(c_AssignmentTrack):
             else:
                 actualFilename = self._CheckFile_(student,file)
             studentCurrentFilenames.append(actualFilename)
-            student.ls_filenames[file] = actualFilename
+            student.ls_filenames = actualFilename
 
         if  False not in studentCurrentFilenames:
             proc = ["gcc"]
@@ -219,7 +219,7 @@ class c_GradeCommon(c_AssignmentTrack):
             options = ["Edit File", "Recompile", "Regrade", "Continue"]
             selectedData = self.o_uI.m_terminalUserInterface(options, instructions)
             if (selectedData == options[0]):
-                super().m_selectFileAction(student,"edit",studentCurrentFilenames)
+                self.m_selectFileAction(student,"edit",studentCurrentFilenames)
             elif (selectedData == options[1]):
                 output = self.m_compileCfile(proc)
                 if (output):
@@ -266,7 +266,7 @@ class c_GradeCommon(c_AssignmentTrack):
                 pointsDeduct = int((100 - freeRatio)/10)
                 if pointsDeduct > 5:pointsDeduct=5
                 feedback.append(f"-{pointsDeduct} points: {numFrees} out of {numAllocs} ({(numFrees/numAllocs)*100:.2f}%) Blocks freed")
-                student.f_grade -=1
+                student.f_grade -=pointsDeduct
 
 
         for function in self.checkFunctions:
@@ -278,10 +278,3 @@ class c_GradeCommon(c_AssignmentTrack):
             feedback.append(f"No exit function found")
 
         return feedback
-    
-
-    
-
-    
-
-    

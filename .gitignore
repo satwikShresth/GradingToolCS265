@@ -89,3 +89,4 @@ GradeScript/src/__pycache__/c_Student.cpython-310.pyc
 GradeScript/src/__pycache__/c_TerminalUserInterface.cpython-310.pyc
 .gradeKey
 .gitignore
+GradeScript/src/hiddenMethods.py

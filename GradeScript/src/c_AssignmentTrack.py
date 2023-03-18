@@ -128,9 +128,13 @@ class c_AssignmentTrack():
             selectedData = self.o_uI.m_terminalUserInterface(
                 options, instructions)
             if (selectedData == options[0]):
-                self.m_selectFileAction(student,"edit",student.ls_filenames)
+                self.o_uI.m_end()
+                student.m_editFile()
+                self.o_uI.m_restart()
             elif (selectedData == options[1]):
-                self.m_selectFileAction(student,"show",student.ls_filenames)
+                self.o_uI.m_end()
+                student.m_showFile()
+                self.o_uI.m_restart()
             elif (selectedData == options[2]):
                 break
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -156,7 +160,11 @@ class c_AssignmentTrack():
                     option, instruction)
                 if (response == option[0]):
                     if action == "edit":
+                        self.o_uI.m_end()
                         student.m_editFile(selectedData)
+                        self.o_uI.m_restart()
                     elif action == "show":
+                        self.o_uI.m_end()
                         student.m_showFile(selectedData)
+                        self.o_uI.m_restart()
                     break
